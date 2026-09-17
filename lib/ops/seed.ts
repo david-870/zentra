@@ -6,28 +6,28 @@ const packages = [
   {
     id: "starter",
     name: "Starter",
-    description: "A strong digital foundation for small businesses.",
+    description: "For businesses establishing their online presence.",
     priceLabel: "Starting from ₦250,000. One-time project.",
     features:
-      "Professional landing page; Basic business website setup; Basic AI / automation setup; Lead & contact capture; WhatsApp integration; Mobile responsive design; Deployment",
+      "A professional website that works on a phone; A simple way for customers to contact you; WhatsApp on your site; A setup that can answer common questions when you are busy; A form so enquiries are not lost; We put the site live for you",
     sortOrder: 1,
   },
   {
     id: "growth",
     name: "Growth",
-    description: "Turn your digital presence into a business system.",
+    description: "For businesses getting enquiries but struggling to manage leads and repetitive tasks.",
     priceLabel: "Starting from ₦650,000. One-time project.",
     features:
-      "Full functional website; AI assistant; WhatsApp OR Instagram automation; Lead capture system; CRM / basic customer management; Business process automation; Analytics & tracking; Deployment & basic training",
+      "A full website; WhatsApp or Instagram replies so messages do not pile up; Capture and keep track of leads; A simple customer list; Automate repetitive tasks such as customer enquiries, follow-ups, bookings and lead management; See how people find you; Launch and training for your team",
     sortOrder: 2,
   },
   {
     id: "scale",
     name: "Scale",
-    description: "A fully customized technology system for established businesses.",
+    description: "For established businesses that need integrated or custom systems.",
     priceLabel: "From ₦1,500,000. Scoped after a conversation.",
     features:
-      "High-end custom website / web application; Advanced AI assistant; WhatsApp & Instagram automation; Advanced business automation; CRM / customer management system; Custom integrations; Dashboards & reporting; Custom software where required",
+      "A custom website or web application; WhatsApp and Instagram as part of one system; A customer system your team can run; Automate work across people, chats and spreadsheets; Connect the tools you already use; Dashboards; Custom software where a package is not enough; Launch, handover and training",
     sortOrder: 3,
   },
 ];
@@ -44,17 +44,17 @@ const knowledge = [
   {
     key: "company",
     title: "Company",
-    body: "Zentra helps businesses build better digital systems, automate repetitive work, and grow through technology. We work with small businesses and large companies.",
+    body: "Zentra helps businesses get online, keep up with enquiries, and cut repetitive work. We recommend technology based on the actual workflow, and we build systems non-technical teams can use. We work with small businesses and large companies.",
   },
   {
     key: "process",
     title: "Process",
-    body: "1) Tell us the problem. 2) We plan the work. 3) We build it. Final package fit is confirmed by the Zentra team.",
+    body: "1) Tell us what's slowing the business down — a short consultation. 2) We recommend the right solution with a clear scope, timeline and cost before development. 3) We build and test it. 4) We launch and train the team. Final package fit is confirmed by the Zentra team.",
   },
   {
     key: "contact",
     title: "Contact",
-    body: "WhatsApp 09131918185. The team can take over any conversation on request.",
+    body: "WhatsApp 09131918185. People can also send an enquiry from the website. The team can take over any conversation on request.",
   },
   {
     key: "pricing-policy",
@@ -69,11 +69,30 @@ const knowledge = [
 ];
 
 export async function ensureSeed() {
-  const existing = await db.package.count();
-  if (existing === 0) {
-    await db.package.createMany({ data: packages });
+  for (const item of packages) {
+    await db.package.upsert({
+      where: { id: item.id },
+      create: item,
+      update: {
+        name: item.name,
+        description: item.description,
+        priceLabel: item.priceLabel,
+        features: item.features,
+        sortOrder: item.sortOrder,
+      },
+    });
+  }
+
+  if ((await db.service.count()) === 0) {
     await db.service.createMany({ data: services });
-    await db.knowledgeBaseItem.createMany({ data: knowledge });
+  }
+
+  for (const item of knowledge) {
+    await db.knowledgeBaseItem.upsert({
+      where: { key: item.key },
+      create: item,
+      update: { title: item.title, body: item.body },
+    });
   }
 
   const orphans = await db.conversation.findMany({

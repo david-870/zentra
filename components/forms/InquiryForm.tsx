@@ -1,54 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { packages, isPackageId } from "@/content/packages";
-import { customServices } from "@/content/services";
+import { useState } from "react";
 import { home } from "@/content/home";
-import { parseServiceIds, readCustomServices } from "@/lib/custom-services";
+import { site } from "@/content/site";
 import { whatsappHref } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
-import { site } from "@/content/site";
 
-type Status = "idle" | "error" | "success";
+type Status = "idle" | "submitting" | "error" | "success";
 
 export function InquiryForm() {
-  const searchParams = useSearchParams();
-  const requested = searchParams.get("package");
-  const serviceQuery = searchParams.getAll("services").join(",");
-  const fromQuery = parseServiceIds(serviceQuery);
-  const initialPackage = requested === "custom" || (requested && isPackageId(requested)) ? requested : "";
-
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [interest, setInterest] = useState(initialPackage);
-  const [stored, setStored] = useState<string[]>([]);
-  const picked = fromQuery.length > 0 ? fromQuery : stored;
-
-  useEffect(() => {
-    if (requested === "custom" || (requested && isPackageId(requested))) {
-      setInterest(requested);
-    }
-    if (requested === "custom" && fromQuery.length === 0) {
-      setStored(readCustomServices());
-    }
-  }, [requested, serviceQuery, fromQuery.length]);
-
-  const labels = useMemo(
-    () => Object.fromEntries(customServices.map((item) => [item.id, item.label])),
-    [],
-  );
+  const [message, setMessage] = useState("");
 
   if (status === "success") {
     return (
       <div className="border border-line bg-raised p-8" role="status">
-        <p className="font-display text-2xl">Continue in WhatsApp.</p>
-        <p className="mt-3 text-muted">If it didn't open, tap the number below.</p>
+        <p className="font-display text-2xl">We have the enquiry.</p>
+        <p className="mt-3 text-muted">
+          We will review it and come back with a next step. If you need to talk now, WhatsApp is still open.
+        </p>
         <a
           href={whatsappHref()}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex min-h-11 items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase"
+          className="mt-6 inline-flex min-h-11 items-center justify-center border border-line px-5 text-[0.8125rem] font-medium tracking-[0.06em] uppercase"
         >
           WhatsApp {site.whatsapp.display}
         </a>
@@ -56,38 +32,50 @@ export function InquiryForm() {
     );
   }
 
-  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const name = String(data.get("name") ?? "").trim();
-    const company = String(data.get("company") ?? "").trim();
-    const note = String(data.get("note") ?? "").trim();
+    const business = String(data.get("business") ?? "").trim();
+    const need = String(data.get("need") ?? "").trim();
+    const contact = String(data.get("contact") ?? "").trim();
+    const trap = String(data.get("company_website") ?? "").trim();
     const nextErrors: Record<string, string> = {};
 
     if (name.length < 2) nextErrors.name = "Enter your name.";
-    if (company.length < 2) nextErrors.company = "Enter your company.";
-    if (!interest) nextErrors.interest = "Choose a starting point.";
-    if (interest === "custom" && picked.length === 0) {
-      nextErrors.services = "Select at least one service.";
-    }
+    if (business.length < 2) nextErrors.business = "Enter your business name.";
+    if (need.length < 8) nextErrors.need = "Tell us what you need help with.";
+    if (contact.length < 6) nextErrors.contact = "Enter a phone number or email.";
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
       setStatus("error");
+      setMessage("");
       return;
     }
 
-    const pack =
-      packages.find((item) => item.id === interest)?.name ??
-      (interest === "custom" ? "Build your own" : interest);
-    const lines = [`Hello, I'm ${name} from ${company}.`, `I'm interested in ${pack}.`];
-    if (interest === "custom" && picked.length > 0) {
-      lines.push(`Services: ${picked.map((id) => labels[id] ?? id).join(", ")}.`);
-    }
-    if (note) lines.push(note);
+    setStatus("submitting");
+    setMessage("");
 
-    window.open(whatsappHref(lines.join(" ")), "_blank", "noopener,noreferrer");
-    setStatus("success");
+    try {
+      const response = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, business, need, contact, company_website: trap }),
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setStatus("error");
+        setMessage(payload.error ?? "Could not send the enquiry. Use WhatsApp instead.");
+        return;
+      }
+
+      setStatus("success");
+    } catch {
+      setStatus("error");
+      setMessage("Could not send the enquiry. Use WhatsApp instead.");
+    }
   }
 
   const field =
@@ -95,6 +83,7 @@ export function InquiryForm() {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+      <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">Or send an enquiry</p>
       <div>
         <label htmlFor="name" className="text-xs tracking-[0.08em] uppercase">
           Name
@@ -108,82 +97,71 @@ export function InquiryForm() {
       </div>
 
       <div>
-        <label htmlFor="company" className="text-xs tracking-[0.08em] uppercase">
-          Company
+        <label htmlFor="business" className="text-xs tracking-[0.08em] uppercase">
+          Business
         </label>
         <input
-          id="company"
-          name="company"
+          id="business"
+          name="business"
           autoComplete="organization"
           className={field}
-          aria-invalid={Boolean(errors.company)}
+          aria-invalid={Boolean(errors.business)}
         />
-        {errors.company ? (
+        {errors.business ? (
           <p className="mt-2 text-xs text-muted" role="alert">
-            {errors.company}
+            {errors.business}
           </p>
         ) : null}
       </div>
 
       <div>
-        <label htmlFor="interest" className="text-xs tracking-[0.08em] uppercase">
-          Which package?
+        <label htmlFor="need" className="text-xs tracking-[0.08em] uppercase">
+          What do you need help with?
         </label>
-        <select
-          id="interest"
-          name="interest"
-          className={field}
-          value={interest}
-          onChange={(event) => setInterest(event.target.value)}
-        >
-          <option value="">Select</option>
-          {packages.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-          <option value="custom">Build your own</option>
-        </select>
-        {errors.interest ? (
-            <p className="mt-2 text-xs text-muted" role="alert">
-              Choose a package.
-            </p>
+        <textarea id="need" name="need" rows={4} className={cn(field, "resize-y")} aria-invalid={Boolean(errors.need)} />
+        {errors.need ? (
+          <p className="mt-2 text-xs text-muted" role="alert">
+            {errors.need}
+          </p>
         ) : null}
       </div>
 
-      {interest === "custom" ? (
-        <div>
-          <p className="text-xs tracking-[0.08em] uppercase">Selected services</p>
-          {picked.length > 0 ? (
-            <ul className="mt-3 space-y-2 text-sm">
-              {picked.map((id) => (
-                <li key={id}>{labels[id] ?? id}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 text-sm text-muted">None yet — choose above.</p>
-          )}
-          <input type="hidden" name="services" value={picked.join(",")} />
-          {errors.services ? (
-            <p className="mt-2 text-xs text-muted" role="alert">
-              {errors.services}
-            </p>
-          ) : null}
-        </div>
-      ) : null}
-
       <div>
-        <label htmlFor="note" className="text-xs tracking-[0.08em] uppercase">
-          What do you need?
+        <label htmlFor="contact" className="text-xs tracking-[0.08em] uppercase">
+          Phone / email
         </label>
-        <textarea id="note" name="note" rows={4} className={cn(field, "resize-y")} />
+        <input
+          id="contact"
+          name="contact"
+          autoComplete="tel"
+          className={field}
+          aria-label="Phone or email"
+          aria-invalid={Boolean(errors.contact)}
+        />
+        {errors.contact ? (
+          <p className="mt-2 text-xs text-muted" role="alert">
+            {errors.contact}
+          </p>
+        ) : null}
       </div>
+
+      <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+        <label htmlFor="company_website">Company website</label>
+        <input id="company_website" name="company_website" tabIndex={-1} autoComplete="off" />
+      </div>
+
+      {message ? (
+        <p className="text-sm text-muted" role="alert">
+          {message}
+        </p>
+      ) : null}
 
       <button
         type="submit"
-        className="inline-flex min-h-11 items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text"
+        disabled={status === "submitting"}
+        className="inline-flex min-h-11 items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text disabled:opacity-60"
       >
-        {home.cta.button}
+        {status === "submitting" ? "Sending" : home.cta.button}
       </button>
     </form>
   );

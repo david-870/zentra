@@ -4,23 +4,35 @@ export type WorkItem = {
   line: string;
 };
 
-/**
- * Swap these for real projects later. Keep each card to a name and one line.
- */
 export const work: WorkItem[] = [
   {
-    slug: "website",
-    name: "Website",
-    line: "So people can find you and get in touch.",
+    slug: "online",
+    name: "Get your business online",
+    line: "Websites & web applications",
   },
   {
-    slug: "whatsapp",
-    name: "WhatsApp & Instagram",
-    line: "So messages don't get missed.",
+    slug: "enquiries",
+    name: "Capture more enquiries",
+    line: "Lead-generation systems",
   },
   {
-    slug: "software",
-    name: "Software",
-    line: "So your team isn't stuck in spreadsheets.",
+    slug: "respond",
+    name: "Respond faster",
+    line: "WhatsApp & Instagram automation",
+  },
+  {
+    slug: "customers",
+    name: "Manage your customers",
+    line: "CRM",
+  },
+  {
+    slug: "repetitive",
+    name: "Reduce repetitive work",
+    line: "Business automation",
+  },
+  {
+    slug: "custom",
+    name: "Build something custom",
+    line: "Custom software / mobile applications",
   },
 ];

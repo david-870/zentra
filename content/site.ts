@@ -2,7 +2,7 @@ export const site = {
   name: "Zentra",
   tagline: "Build. Automate. Grow.",
   description:
-    "We build websites, software, and automation for small businesses and large companies.",
+    "We help businesses get found, keep up with enquiries, and cut the repetitive work that slows a team down.",
   whatsapp: {
     display: "09131918185",
     e164: "2349131918185",

@@ -1,8 +1,8 @@
 export const navLinks = [
   { label: "Home", href: "/#top" },
   { label: "Solutions", href: "/#solutions" },
-  { label: "Work", href: "/#work" },
-  { label: "About", href: "/#about" },
+  { label: "What we do", href: "/#work" },
+  { label: "Why Zentra", href: "/#about" },
   { label: "Contact", href: "/#contact" },
 ] as const;
 

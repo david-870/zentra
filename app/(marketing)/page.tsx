@@ -11,10 +11,10 @@ export default function HomePage() {
     <main id="main">
       <Hero />
       <Packages />
+      <Work />
+      <About />
       <Custom />
       <Process />
-      <About />
-      <Work />
       <FinalCta />
     </main>
   );

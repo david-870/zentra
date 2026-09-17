@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { home } from "@/content/home";
 import { site } from "@/content/site";
 import { InquiryForm } from "@/components/forms/InquiryForm";
@@ -13,6 +12,7 @@ export function FinalCta() {
         <div className="lg:col-span-5">
           <h2 className="font-display text-3xl sm:text-5xl">{home.cta.headline}</h2>
           <p className="mt-4 text-muted">{home.cta.support}</p>
+          <p className="mt-4 text-sm text-muted">{home.cta.next}</p>
           <a
             href={whatsappHref()}
             target="_blank"
@@ -23,9 +23,7 @@ export function FinalCta() {
           </a>
         </div>
         <div className="lg:col-span-7">
-          <Suspense fallback={<div className="h-72 border border-line bg-raised" />}>
-            <InquiryForm />
-          </Suspense>
+          <InquiryForm />
         </div>
       </Container>
     </Section>

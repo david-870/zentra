@@ -27,8 +27,8 @@ export function Packages() {
     <Section id="solutions" className="border-b border-line">
       <Container>
         <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">{copy.eyebrow}</p>
-        <h2 className="font-display mt-4 max-w-[16ch] text-3xl sm:text-5xl">{copy.headline}</h2>
-        <p className="mt-5 max-w-xl text-muted">{copy.support}</p>
+        <h2 className="font-display mt-4 max-w-[18ch] text-3xl sm:text-5xl">{copy.headline}</h2>
+        <p className="mt-5 max-w-2xl text-muted">{copy.support}</p>
 
         <div className="mt-14 grid items-stretch gap-4 lg:grid-cols-3 lg:gap-5">
           {packages.map((item) => (
@@ -46,7 +46,8 @@ export function Packages() {
               </div>
 
               <h3 className="font-display mt-3 text-[2rem] uppercase">{item.name}</h3>
-              <p className="mt-3 text-sm text-muted">{item.description}</p>
+              <p className="mt-3 text-sm text-text">{item.audience}</p>
+              <p className="mt-2 text-sm text-muted">{item.description}</p>
 
               <div className="mt-8">
                 {item.priceCaption ? (
