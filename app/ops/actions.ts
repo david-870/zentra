@@ -69,7 +69,7 @@ export async function addNote(leadId: string, formData: FormData) {
   const user = await requireUser();
   if (!user) redirect("/ops/login");
   const text = String(formData.get("text") ?? "").trim();
-  if (!text) return { error: "Write a note." };
+  if (!text) return;
   await db.note.create({ data: { leadId, userId: user.id, text } });
   refreshOps(leadId);
 }
@@ -78,13 +78,13 @@ export async function sendHumanMessage(conversationId: string, formData: FormDat
   const user = await requireUser();
   if (!user) redirect("/ops/login");
   const text = String(formData.get("text") ?? "").trim();
-  if (!text) return { error: "Write a message." };
+  if (!text) return;
 
   const conversation = await db.conversation.findUnique({
     where: { id: conversationId },
     include: { contact: true },
   });
-  if (!conversation) return { error: "Conversation missing." };
+  if (!conversation) return;
 
   if (conversation.control !== "HUMAN") {
     await db.conversation.update({
@@ -115,7 +115,7 @@ export async function sendHumanMessage(conversationId: string, formData: FormDat
       leadId: failedLead?.id,
     });
     if (failedLead) redirect(`/ops/leads/${failedLead.id}?send=error`);
-    return { error: detail };
+    return;
   }
   const lead = await db.lead.findUnique({ where: { conversationId } });
   refreshOps(lead?.id);
@@ -126,9 +126,9 @@ export async function scheduleFollowUp(leadId: string, formData: FormData) {
   if (!user) redirect("/ops/login");
   const days = Number(formData.get("days") ?? 1);
   const template = String(formData.get("template") ?? "").trim();
-  if (!template) return { error: "Write a follow-up." };
+  if (!template) return;
   const lead = await db.lead.findUnique({ where: { id: leadId } });
-  if (!lead) return { error: "Lead missing." };
+  if (!lead) return;
   await db.followUp.create({
     data: {
       leadId,
@@ -144,9 +144,8 @@ export async function scheduleFollowUp(leadId: string, formData: FormData) {
 export async function runFollowUpsAction() {
   const user = await requireUser();
   if (!user) redirect("/ops/login");
-  const sent = await runDueFollowUps();
+  await runDueFollowUps();
   refreshOps();
-  return { sent };
 }
 
 export async function simulateInbound(formData: FormData) {
@@ -154,7 +153,7 @@ export async function simulateInbound(formData: FormData) {
   if (!user) redirect("/ops/login");
   const phone = String(formData.get("phone") ?? "").replace(/\D/g, "");
   const text = String(formData.get("text") ?? "").trim();
-  if (!phone || !text) return { error: "Phone and message are required." };
+  if (!phone || !text) return;
   await ensureSeed();
   await processCustomerText({
     waId: phone,
@@ -178,7 +177,7 @@ export async function updateKnowledge(formData: FormData) {
   if (!user) redirect("/ops/login");
   const id = String(formData.get("id") ?? "");
   const body = String(formData.get("body") ?? "");
-  if (!id) return { error: "Missing item." };
+  if (!id) return;
   await db.knowledgeBaseItem.update({ where: { id }, data: { body } });
   refreshOps();
 }
