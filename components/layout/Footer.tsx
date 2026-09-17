@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { navLinks } from "@/content/navigation";
 import { site } from "@/content/site";
+import { Logo } from "@/components/brand/Logo";
 import { Container } from "@/components/ui/Container";
 import { whatsappHref } from "@/lib/whatsapp";
 
@@ -9,7 +10,7 @@ export function Footer() {
     <footer className="border-t border-line">
       <Container className="flex flex-col gap-8 py-12 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="font-display text-xl">{site.name}</p>
+          <Logo />
           <p className="mt-2 max-w-xs text-sm text-muted">{site.description}</p>
         </div>
         <ul className="flex flex-wrap gap-5 text-sm">

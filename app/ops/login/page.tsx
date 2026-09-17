@@ -1,4 +1,5 @@
 import { loginAction } from "@/app/ops/actions";
+import { Logo } from "@/components/brand/Logo";
 import { ensureSeed } from "@/lib/ops/seed";
 
 export default async function LoginPage({
@@ -10,7 +11,8 @@ export default async function LoginPage({
   const query = await searchParams;
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5">
-      <p className="font-display text-4xl">Zentra Ops</p>
+      <Logo className="text-4xl" />
+      <p className="mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">Ops</p>
       <p className="mt-3 text-muted">Internal lead and conversation workspace.</p>
       <form action={loginAction} className="mt-10 grid gap-4">
         <label className="text-xs tracking-[0.08em] uppercase">

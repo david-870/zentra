@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { navLinks, primaryCta } from "@/content/navigation";
-import { site } from "@/content/site";
+import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 
 export function Header() {
@@ -12,12 +12,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-5 sm:h-[4.25rem] sm:px-8">
-        <Link
-          href="/#top"
-          className="font-display text-[1.15rem] tracking-tight"
-          onClick={() => setOpen(false)}
-        >
-          {site.name}
+        <Link href="/#top" aria-label="Zentra home" className="text-text" onClick={() => setOpen(false)}>
+          <Logo />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">

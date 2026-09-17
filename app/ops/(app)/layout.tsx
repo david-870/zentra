@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/ops/auth";
 import { db } from "@/lib/ops/db";
 import { ensureSeed } from "@/lib/ops/seed";
 import { logoutAction, markNotificationsRead } from "@/app/ops/actions";
+import { Logo } from "@/components/brand/Logo";
 
 const nav = [
   { href: "/ops", label: "Overview" },
@@ -23,7 +24,12 @@ export default async function OpsAppLayout({ children }: { children: React.React
     <div className="min-h-dvh bg-bg">
       <header className="border-b border-line">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between px-5 py-4 sm:px-8">
-          <p className="font-display text-xl">Zentra Ops</p>
+          <Link href="/ops" className="text-text" aria-label="Zentra Ops">
+            <span className="inline-flex items-center gap-3">
+              <Logo />
+              <span className="text-[0.65rem] tracking-[0.16em] text-muted uppercase">Ops</span>
+            </span>
+          </Link>
           <nav className="hidden gap-6 text-[0.75rem] tracking-[0.12em] text-muted uppercase sm:flex">
             {nav.map((item) => (
               <Link key={item.href} href={item.href} className="hover:text-text">
