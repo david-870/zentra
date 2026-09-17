@@ -9,7 +9,7 @@ export function Custom() {
   return (
     <Section id="custom" className="border-b border-line">
       <Container>
-        <h2 className="font-display max-w-[16ch] text-3xl sm:text-5xl">{copy.headline}</h2>
+        <h2 className="font-display max-w-[16ch] text-[1.75rem] text-pretty sm:text-5xl">{copy.headline}</h2>
         <p className="mt-5 max-w-2xl text-muted">{copy.body}</p>
         <div className="mt-10">
           <CustomBuilder />

@@ -7,7 +7,7 @@ import { whatsappHref } from "@/lib/whatsapp";
 
 export function Footer() {
   return (
-    <footer className="border-t border-line">
+    <footer className="relative z-10 border-t border-line bg-bg">
       <Container className="flex flex-col gap-8 py-12 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <Logo />

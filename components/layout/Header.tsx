@@ -10,10 +10,10 @@ export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between px-5 sm:h-[4.25rem] sm:px-8">
-        <Link href="/#top" aria-label="Zentra home" className="text-text" onClick={() => setOpen(false)}>
-          <Logo />
+    <header className="sticky top-0 z-50 border-b border-line bg-bg/90 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-8">
+        <Link href="/#top" aria-label="Zentra home" className="min-w-0 shrink text-text" onClick={() => setOpen(false)}>
+          <Logo className="text-[1.05rem] sm:text-[1.2rem]" />
         </Link>
 
         <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
@@ -33,7 +33,7 @@ export function Header() {
 
         <button
           type="button"
-          className="min-h-11 text-[0.75rem] tracking-[0.12em] uppercase lg:hidden"
+          className="shrink-0 min-h-11 px-1 text-[0.75rem] tracking-[0.12em] uppercase lg:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
           onClick={() => setOpen((v) => !v)}
@@ -43,7 +43,7 @@ export function Header() {
       </div>
 
       {open ? (
-        <div id="mobile-nav" className="border-t border-line bg-bg px-5 py-6 lg:hidden">
+        <div id="mobile-nav" className="border-t border-line bg-bg px-4 py-6 lg:hidden">
           <nav aria-label="Mobile" className="flex flex-col gap-1">
             {navLinks.map((item) => (
               <Link

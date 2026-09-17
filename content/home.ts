@@ -1,6 +1,6 @@
 export const home = {
   hero: {
-    headline: "Build. Automate. Grow.",
+    headline: ["Build.", "Automate.", "Grow."],
     support:
       "If customers cannot find you, enquiries pile up, or your team repeats the same tasks every day — that is what we fix.",
     primary: { label: "Get Started", href: "/#contact" },

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Syne } from "next/font/google";
 import { site } from "@/content/site";
 import "./globals.css";
@@ -15,6 +15,12 @@ const display = Syne({
   display: "swap",
   variable: "--font-display",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0b0b0a",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),

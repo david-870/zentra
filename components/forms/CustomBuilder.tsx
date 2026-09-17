@@ -37,7 +37,7 @@ export function CustomBuilder() {
                 aria-pressed={checked}
                 onClick={() => toggle(service.id)}
                 className={cn(
-                  "flex min-h-12 items-center gap-3 border px-4 text-left text-sm transition-colors duration-200",
+                  "flex min-h-12 items-center gap-3 border px-3 py-3 text-left text-sm transition-colors duration-200 sm:px-4",
                   checked
                     ? "border-text bg-raised text-text"
                     : "border-line text-muted hover:border-muted hover:text-text",
@@ -62,7 +62,7 @@ export function CustomBuilder() {
           href={labels.length > 0 ? customWhatsappHref(labels) : "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-12 items-center justify-center bg-white px-6 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text"
+          className="inline-flex min-h-12 w-full items-center justify-center bg-white px-6 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text sm:w-auto"
           onClick={(event) => {
             if (labels.length === 0) {
               event.preventDefault();

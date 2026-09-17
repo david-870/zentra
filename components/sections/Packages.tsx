@@ -27,15 +27,15 @@ export function Packages() {
     <Section id="solutions" className="border-b border-line">
       <Container>
         <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">{copy.eyebrow}</p>
-        <h2 className="font-display mt-4 max-w-[18ch] text-3xl sm:text-5xl">{copy.headline}</h2>
+        <h2 className="font-display mt-4 max-w-[18ch] text-[1.75rem] text-pretty sm:text-5xl">{copy.headline}</h2>
         <p className="mt-5 max-w-2xl text-muted">{copy.support}</p>
 
-        <div className="mt-14 grid items-stretch gap-4 lg:grid-cols-3 lg:gap-5">
+        <div className="mt-10 grid items-stretch gap-4 sm:mt-14 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {packages.map((item) => (
             <article
               key={item.id}
               className={cn(
-                "flex flex-col border border-line bg-raised p-7 transition-colors duration-200 hover:border-muted sm:p-8",
+                "flex flex-col border border-line bg-raised p-5 transition-colors duration-200 hover:border-muted sm:p-8",
                 item.featured && "border-text bg-[#171714] hover:border-text lg:py-9",
               )}
             >
@@ -45,7 +45,7 @@ export function Packages() {
                 ) : null}
               </div>
 
-              <h3 className="font-display mt-3 text-[2rem] uppercase">{item.name}</h3>
+              <h3 className="font-display mt-3 text-[1.65rem] uppercase sm:text-[2rem]">{item.name}</h3>
               <p className="mt-3 text-sm text-text">{item.audience}</p>
               <p className="mt-2 text-sm text-muted">{item.description}</p>
 
@@ -57,7 +57,7 @@ export function Packages() {
                   {item.pricePrefix ? (
                     <span className="text-sm text-muted">{item.pricePrefix}</span>
                   ) : null}
-                  <span className="font-display text-[2.15rem] tracking-tight">
+                  <span className="font-display text-[1.85rem] tracking-tight sm:text-[2.15rem]">
                     {item.currency}
                     {item.price}
                   </span>
@@ -67,7 +67,7 @@ export function Packages() {
 
               <ul className="mt-8 flex-1 space-y-3">
                 {item.features.map((line) => (
-                  <li key={line} className="flex gap-3 text-sm">
+                  <li key={line} className="flex gap-3 text-sm text-pretty">
                     <Check />
                     <span>{line}</span>
                   </li>

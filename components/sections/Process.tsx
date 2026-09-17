@@ -9,7 +9,7 @@ export function Process() {
     <Section id="process" className="border-b border-line">
       <Container>
         <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">{copy.eyebrow}</p>
-        <h2 className="font-display mt-4 max-w-[18ch] text-3xl sm:text-5xl">{copy.headline}</h2>
+        <h2 className="font-display mt-4 max-w-[18ch] text-[1.75rem] text-pretty sm:text-5xl">{copy.headline}</h2>
         <p className="mt-5 max-w-2xl text-muted">{copy.support}</p>
         <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {copy.steps.map((step) => (
