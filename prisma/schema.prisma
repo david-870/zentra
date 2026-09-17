@@ -1,0 +1,183 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  NEW
+  QUALIFYING
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+  FOLLOW_UP
+  HUMAN_HANDOFF
+}
+
+enum ConversationControl {
+  AI
+  HUMAN
+}
+
+enum MessageAuthor {
+  CUSTOMER
+  AI
+  HUMAN
+}
+
+enum MessageDirection {
+  IN
+  OUT
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  notes        Note[]
+  messages     Message[]
+}
+
+model Contact {
+  id            String         @id @default(cuid())
+  waId          String         @unique
+  phone         String
+  name          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[]
+  leads         Lead[]
+  businesses    Business[]
+}
+
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  contactId   String
+  contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  leads       Lead[]
+  createdAt   DateTime @default(now())
+}
+
+model Lead {
+  id                   String         @id @default(cuid())
+  contactId            String
+  contact              Contact        @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  businessId           String?
+  business             Business?      @relation(fields: [businessId], references: [id])
+  conversationId       String?        @unique
+  conversation         Conversation?  @relation(fields: [conversationId], references: [id])
+  name                 String?
+  phone                String
+  businessName         String?
+  businessDescription  String?
+  problem              String?
+  serviceInterest      String?
+  packageInterest      String?
+  budgetRange          String?
+  source               String         @default("whatsapp")
+  score                Int            @default(0)
+  status               LeadStatus     @default(NEW)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  notes                Note[]
+  followUps            FollowUp[]
+}
+
+model Conversation {
+  id          String               @id @default(cuid())
+  contactId   String
+  contact     Contact              @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  control     ConversationControl  @default(AI)
+  stage       String               @default("welcome")
+  contextJson String               @default("{}")
+  handoffAt   DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  messages    Message[]
+  lead        Lead?
+}
+
+model Message {
+  id              String            @id @default(cuid())
+  conversationId  String
+  conversation    Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  waMessageId     String?           @unique
+  direction       MessageDirection
+  author          MessageAuthor
+  userId          String?
+  user            User?             @relation(fields: [userId], references: [id])
+  text            String
+  createdAt       DateTime          @default(now())
+}
+
+model Package {
+  id          String   @id
+  name        String
+  description String
+  priceLabel  String
+  features    String
+  sortOrder   Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id        String   @id
+  name      String
+  summary   String
+  sortOrder Int      @default(0)
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  leadId      String
+  lead        Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  offsetDays  Int
+  template    String
+  scheduledAt DateTime
+  sentAt      DateTime?
+  cancelled   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model KnowledgeBaseItem {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  title     String
+  body      String
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  leadId    String?
+  createdAt DateTime @default(now())
+}
+
+model ProcessedEvent {
+  id        String   @id
+  createdAt DateTime @default(now())
+}
