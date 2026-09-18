@@ -3,6 +3,7 @@ export const home = {
     headline: ["Build.", "Automate.", "Grow."],
     support:
       "If customers cannot find you, enquiries pile up, or your team repeats the same tasks every day — that is what we fix.",
+    line: "Websites · Automation · CRM · Custom Software",
     primary: { label: "Get Started", href: "/#contact" },
     secondary: { label: "See packages", href: "/#solutions" },
   },
@@ -13,18 +14,19 @@ export const home = {
       "Starter if you need to be found. Growth if enquiries are coming in but follow-up is messy. Scale if you need systems built around how you already work.",
   },
   why: {
-    eyebrow: "Why businesses choose Zentra",
-    headline: "Built around your business. Usable by your team.",
+    eyebrow: "Who is Zentra",
+    headline: "We build practical technology for growing businesses.",
     support:
-      "We do not sell a stack of tools and leave you to figure them out. You get a clear recommendation, a system people can actually run, and a handover after launch.",
+      "Zentra helps businesses replace disconnected processes with websites, automation and software designed around how their teams actually work.",
+    trust: "We don't just build technology. We build systems around your business.",
     points: [
       {
         title: "Built around your business",
-        body: "We recommend technology based on your actual workflow rather than selling unnecessary tools.",
+        body: "We start from how the work actually happens, then recommend what is practical to build.",
       },
       {
-        title: "Built for non-technical teams",
-        body: "We build systems your employees can actually understand and use.",
+        title: "Easier to run. Built to grow.",
+        body: "The system should be something your team can manage — and something the business can grow on.",
       },
     ],
   },

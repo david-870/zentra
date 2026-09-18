@@ -5,24 +5,24 @@ import { notify } from "@/lib/ops/notify";
 import { ensureSeed } from "@/lib/ops/seed";
 import { sendWhatsAppText, whatsappConfigured } from "@/lib/ops/whatsapp";
 
-function parseContact(value: string) {
-  const trimmed = value.trim();
-  const email = /@/.test(trimmed) ? trimmed.toLowerCase() : "";
-  const digits = trimmed.replace(/\D/g, "");
-  const phone = digits.length >= 10 ? digits : "";
-  return { email, phone, raw: trimmed };
-}
-
-async function persistWebsiteEnquiryLead(input: {
+type EnquiryInput = {
   name: string;
   business: string;
   need: string;
-  contact: string;
-}) {
+  phone: string;
+  email: string;
+  website?: string;
+};
+
+function contactLine(input: EnquiryInput) {
+  return [input.phone, input.email, input.website].filter(Boolean).join(" · ");
+}
+
+async function persistWebsiteEnquiryLead(input: EnquiryInput) {
   await ensureSeed();
-  const parsed = parseContact(input.contact);
-  const phone = parsed.phone || "website";
-  const waId = `web-${parsed.email || parsed.phone || input.contact.toLowerCase()}`;
+  const digits = input.phone.replace(/\D/g, "");
+  const phone = digits.length >= 10 ? digits : input.phone;
+  const waId = `web-${input.email.toLowerCase()}`;
 
   const contact = await db.contact.upsert({
     where: { waId },
@@ -36,7 +36,7 @@ async function persistWebsiteEnquiryLead(input: {
       name: input.name,
       phone,
       businessName: input.business,
-      businessDescription: parsed.email || parsed.raw,
+      businessDescription: [input.email, input.website].filter(Boolean).join(" · "),
       problem: input.need,
       source: "website",
       status: "NEW",
@@ -53,12 +53,7 @@ async function persistWebsiteEnquiryLead(input: {
   return lead;
 }
 
-async function notifyOwnerWhatsApp(input: {
-  name: string;
-  business: string;
-  need: string;
-  contact: string;
-}) {
+async function notifyOwnerWhatsApp(input: EnquiryInput) {
   if (!whatsappConfigured()) return false;
   const to = process.env.OPS_NOTIFY_PHONE || site.whatsapp.e164;
   if (!to) return false;
@@ -69,19 +64,17 @@ async function notifyOwnerWhatsApp(input: {
       `Name: ${input.name}`,
       `Business: ${input.business}`,
       `Need: ${input.need}`,
-      `Contact: ${input.contact}`,
+      `Phone: ${input.phone}`,
+      `Email: ${input.email}`,
+      input.website ? `Website: ${input.website}` : "Website: none",
     ].join("\n"),
   );
   return true;
 }
 
-export async function createWebsiteEnquiry(input: {
-  name: string;
-  business: string;
-  need: string;
-  contact: string;
-}) {
+export async function createWebsiteEnquiry(input: EnquiryInput) {
   const errors: unknown[] = [];
+  const stored = { ...input, contact: contactLine(input) };
 
   try {
     const lead = await persistWebsiteEnquiryLead(input);
@@ -97,7 +90,12 @@ export async function createWebsiteEnquiry(input: {
   }
 
   try {
-    const id = await persistWebsiteEnquiryPostgres(input);
+    const id = await persistWebsiteEnquiryPostgres({
+      name: input.name,
+      business: input.business,
+      need: input.need,
+      contact: stored.contact,
+    });
     if (id) {
       try {
         await notifyOwnerWhatsApp(input);

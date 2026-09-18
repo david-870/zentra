@@ -7,6 +7,14 @@ import { cn } from "@/lib/cn";
 
 type Status = "idle" | "submitting" | "error" | "success";
 
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isPhone(value: string) {
+  return value.replace(/\D/g, "").length >= 10;
+}
+
 export function InquiryForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -37,14 +45,17 @@ export function InquiryForm() {
     const name = String(data.get("name") ?? "").trim();
     const business = String(data.get("business") ?? "").trim();
     const need = String(data.get("need") ?? "").trim();
-    const contact = String(data.get("contact") ?? "").trim();
-    const trap = String(data.get("company_website") ?? "").trim();
+    const phone = String(data.get("phone") ?? "").trim();
+    const email = String(data.get("email") ?? "").trim();
+    const website = String(data.get("website") ?? "").trim();
+    const trap = String(data.get("company_fax") ?? "").trim();
     const nextErrors: Record<string, string> = {};
 
     if (name.length < 2) nextErrors.name = "Enter your name.";
     if (business.length < 2) nextErrors.business = "Enter your business name.";
     if (need.length < 8) nextErrors.need = "Tell us what you need help with.";
-    if (contact.length < 6) nextErrors.contact = "Enter a phone number or email.";
+    if (!isPhone(phone)) nextErrors.phone = "Enter a phone or WhatsApp number.";
+    if (!isEmail(email)) nextErrors.email = "Enter an email address.";
 
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) {
@@ -60,7 +71,7 @@ export function InquiryForm() {
       const response = await fetch("/api/enquiry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, business, need, contact, company_website: trap }),
+        body: JSON.stringify({ name, business, need, phone, email, website, company_fax: trap }),
       });
       const payload = (await response.json()) as { error?: string };
 
@@ -81,7 +92,7 @@ export function InquiryForm() {
     "mt-2 w-full border border-line bg-bg px-3 py-3 text-sm text-text outline-none transition-colors focus:border-text";
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-5" noValidate>
+    <form onSubmit={onSubmit} className="relative grid gap-5" noValidate>
       <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">Or send an enquiry</p>
       <div>
         <label htmlFor="name" className="text-xs tracking-[0.08em] uppercase">
@@ -125,28 +136,63 @@ export function InquiryForm() {
         ) : null}
       </div>
 
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="phone" className="text-xs tracking-[0.08em] uppercase">
+            Phone / WhatsApp number
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            autoComplete="tel"
+            className={field}
+            aria-invalid={Boolean(errors.phone)}
+          />
+          {errors.phone ? (
+            <p className="mt-2 text-xs text-muted" role="alert">
+              {errors.phone}
+            </p>
+          ) : null}
+        </div>
+        <div>
+          <label htmlFor="email" className="text-xs tracking-[0.08em] uppercase">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            className={field}
+            aria-invalid={Boolean(errors.email)}
+          />
+          {errors.email ? (
+            <p className="mt-2 text-xs text-muted" role="alert">
+              {errors.email}
+            </p>
+          ) : null}
+        </div>
+      </div>
+
       <div>
-        <label htmlFor="contact" className="text-xs tracking-[0.08em] uppercase">
-          Phone / email
+        <label htmlFor="website" className="text-xs tracking-[0.08em] uppercase">
+          Company website <span className="normal-case tracking-normal text-muted">(if you have one)</span>
         </label>
         <input
-          id="contact"
-          name="contact"
-          autoComplete="tel"
+          id="website"
+          name="website"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
+          placeholder="Optional"
           className={field}
-          aria-label="Phone or email"
-          aria-invalid={Boolean(errors.contact)}
         />
-        {errors.contact ? (
-          <p className="mt-2 text-xs text-muted" role="alert">
-            {errors.contact}
-          </p>
-        ) : null}
       </div>
 
       <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-        <label htmlFor="company_website">Company website</label>
-        <input id="company_website" name="company_website" tabIndex={-1} autoComplete="off" />
+        <label htmlFor="company_fax">Company fax</label>
+        <input id="company_fax" name="company_fax" tabIndex={-1} autoComplete="off" />
       </div>
 
       {message ? (

@@ -9,9 +9,10 @@ export function About() {
     <Section id="about" className="border-b border-line">
       <Container>
         <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">{copy.eyebrow}</p>
-        <h2 className="font-display mt-4 max-w-[18ch] text-[1.75rem] text-pretty sm:text-5xl">{copy.headline}</h2>
+        <h2 className="font-display mt-4 max-w-[22ch] text-[1.75rem] text-pretty sm:text-5xl">{copy.headline}</h2>
         <p className="mt-5 max-w-2xl text-muted">{copy.support}</p>
-        <ul className="mt-12 grid gap-4 sm:grid-cols-2">
+        <p className="mt-6 max-w-2xl text-pretty">{copy.trust}</p>
+        <ul className="mt-8 grid gap-4 sm:grid-cols-2">
           {copy.points.map((point) => (
             <li key={point.title} className="border border-line bg-raised p-5 sm:p-8">
               <h3 className="font-display text-xl sm:text-2xl">{point.title}</h3>

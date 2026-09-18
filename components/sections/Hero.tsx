@@ -21,6 +21,9 @@ export function Hero() {
         <p className="rise rise-2 mt-5 max-w-[34rem] text-[0.95rem] text-pretty text-muted sm:mt-6 sm:text-lg">
           {hero.support}
         </p>
+        <p className="rise rise-2 mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">
+          {hero.line}
+        </p>
         <div className="rise rise-3 mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center">
           <Button href={hero.primary.href} className="w-full sm:w-auto">
             {hero.primary.label}

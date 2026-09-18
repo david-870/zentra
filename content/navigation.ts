@@ -10,3 +10,10 @@ export const primaryCta = {
   label: "Start a Project",
   href: "/#contact",
 } as const;
+
+export const footerLinks = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms", href: "/terms" },
+  { label: "Contact", href: "/#contact" },
+  { label: "Email", href: "/#contact" },
+] as const;
