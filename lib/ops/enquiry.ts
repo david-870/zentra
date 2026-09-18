@@ -93,25 +93,29 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
     input.website ? `Website: ${input.website}` : "Website: none",
   ].join("\n");
 
+  const tail = `ending ${to.slice(-4)}`;
+  const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
+  const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
+
+  try {
+    await sendWhatsAppTemplate(to, template, language, template === "hello_world" ? [] : [
+      input.name,
+      input.business,
+      input.need,
+      input.phone,
+      input.email,
+    ]);
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "WhatsApp template failed";
+    throw new Error(`${detail} (pinged number ${tail})`);
+  }
+
   try {
     await sendWhatsAppText(to, body);
-    return true;
-  } catch (error) {
-    const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
-    const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
-    try {
-      await sendWhatsAppTemplate(to, template, language, template === "hello_world" ? [] : [
-        input.name,
-        input.business,
-        input.need,
-        input.phone,
-        input.email,
-      ]);
-      return true;
-    } catch {
-      throw error;
-    }
+  } catch {
+    // Template already arrived. Text needs a reply in the 24h window.
   }
+  return true;
 }
 
 async function recordNotify(neonId: string | null, input: EnquiryInput) {

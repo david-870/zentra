@@ -4,6 +4,7 @@ import { listWebsiteEnquiries, postgresConfigured } from "@/lib/ops/enquiry-post
 import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { createOpsSession } from "@/lib/ops/session-store";
 import { rateLimit } from "@/lib/ops/rate-limit";
+import { site } from "@/content/site";
 import { getWhatsAppDisplayPhone, normalizeWaPhone } from "@/lib/ops/whatsapp";
 
 export const runtime = "nodejs";
@@ -56,6 +57,8 @@ export async function GET() {
     whatsappReady: Boolean(runtimeEnv("WHATSAPP_ACCESS_TOKEN") && runtimeEnv("WHATSAPP_PHONE_NUMBER_ID")),
     graphOk: Boolean(from),
     notifyIsSendingNumber: Boolean(from && (from === notify || from.endsWith(notify) || notify.endsWith(from))),
+    notifyIsBusinessLine: notify === normalizeWaPhone(site.whatsapp.e164),
+    notifyLast4: notify.slice(-4),
     lastEnquiryPing: latest
       ? {
           sent: Boolean(latest.notifiedAt),
