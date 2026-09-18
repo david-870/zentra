@@ -17,10 +17,9 @@ export async function createOpsSession() {
   const sql = await ensureSessionsTable();
   if (!sql) return null;
   const id = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
   await sql`
     INSERT INTO ops_sessions (id, expires_at)
-    VALUES (${id}, ${expiresAt.toISOString()})
+    VALUES (${id}, now() + interval '14 days')
   `;
   return id;
 }

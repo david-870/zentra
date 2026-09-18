@@ -1,5 +1,6 @@
+import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { sameText } from "@/lib/ops/auth";
+import { postgresConfigured } from "@/lib/ops/enquiry-postgres";
 import { createOpsSession } from "@/lib/ops/session-store";
 import { rateLimit } from "@/lib/ops/rate-limit";
 
@@ -8,22 +9,59 @@ export const dynamic = "force-dynamic";
 
 const COOKIE = "zentra_ops";
 
+// Keep these member accesses so the host includes the secrets in this function.
+const tracedEmail = process.env.OPS_EMAIL;
+const tracedPassword = process.env.OPS_PASSWORD;
+const tracedSession = process.env.SESSION_SECRET;
+const tracedPostgres = process.env.POSTGRES_URL;
+
+function clean(value?: string) {
+  if (typeof value !== "string") return "";
+  return value.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
+}
+
 function envValue(name: string) {
+  if (name === "OPS_EMAIL" && tracedEmail) return clean(tracedEmail);
+  if (name === "OPS_PASSWORD" && tracedPassword) return clean(tracedPassword);
+  if (name === "SESSION_SECRET" && tracedSession) return clean(tracedSession);
+  if (name === "POSTGRES_URL" && tracedPostgres) return clean(tracedPostgres);
+
   for (const [key, value] of Object.entries(process.env)) {
     if (key !== name) continue;
-    if (typeof value !== "string") return "";
-    return value.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
+    return clean(value);
   }
   return "";
+}
+
+function sameText(left: string, right: string) {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+function fail(request: NextRequest, code: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = "/ops/login";
+  url.search = `error=${code}`;
+  return NextResponse.redirect(url, 303);
+}
+
+export async function GET() {
+  return NextResponse.json({
+    passwordReady: envValue("OPS_PASSWORD").length >= 8,
+    emailReady: Boolean(envValue("OPS_EMAIL")),
+    postgresReady: postgresConfigured(),
+    keys: Object.keys(process.env)
+      .filter((key) => /^(OPS_|SESSION_|POSTGRES_|DATABASE_)/.test(key))
+      .sort(),
+  });
 }
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!rateLimit(`ops-login:${ip}`, 12, 10 * 60_000)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/ops/login";
-    url.search = "error=1";
-    return NextResponse.redirect(url, 303);
+    return fail(request, "1");
   }
 
   const form = await request.formData();
@@ -36,22 +74,27 @@ export async function POST(request: NextRequest) {
     hasEmail: Boolean(envValue("OPS_EMAIL")),
     hasPassword: Boolean(expectedPassword),
     passwordLength: expectedPassword.length,
+    postgresReady: postgresConfigured(),
   });
 
-  if (!expectedPassword || email !== expectedEmail || !sameText(password, expectedPassword)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/ops/login";
-    url.search = "error=1";
-    return NextResponse.redirect(url, 303);
+  if (!expectedPassword) {
+    return fail(request, "env");
   }
 
-  const sessionId = await createOpsSession();
+  if (email !== expectedEmail || !sameText(password, expectedPassword)) {
+    return fail(request, "1");
+  }
+
+  let sessionId: string | null = null;
+  try {
+    sessionId = await createOpsSession();
+  } catch (error) {
+    console.error("ops login session", error);
+    return fail(request, "session");
+  }
+
   if (!sessionId) {
-    console.error("ops login: could not store session");
-    const url = request.nextUrl.clone();
-    url.pathname = "/ops/login";
-    url.search = "error=1";
-    return NextResponse.redirect(url, 303);
+    return fail(request, "session");
   }
 
   const url = request.nextUrl.clone();

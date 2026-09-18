@@ -27,7 +27,13 @@ export default async function LoginPage({
           Password
           <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
         </label>
-        {query.error ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
+        {query.error === "1" ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
+        {query.error === "env" ? (
+          <p className="text-sm text-muted">The server cannot read OPS_PASSWORD yet. Check that variable in Vercel, then redeploy.</p>
+        ) : null}
+        {query.error === "session" ? (
+          <p className="text-sm text-muted">Password was accepted, but the inbox session could not be saved.</p>
+        ) : null}
         <button type="submit" className="mt-2 min-h-12 bg-white text-sm tracking-[0.08em] text-black uppercase">
           Enter
         </button>
