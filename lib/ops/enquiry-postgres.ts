@@ -1,14 +1,30 @@
 import { neon } from "@neondatabase/serverless";
 
+function isPostgresUrl(value?: string) {
+  return Boolean(value && /^postgres(ql)?:\/\//i.test(value));
+}
+
 function postgresUrl() {
-  for (const value of [
-    process.env.POSTGRES_PRISMA_URL,
-    process.env.POSTGRES_URL,
-    process.env.DATABASE_URL_UNPOOLED,
-    process.env.DATABASE_URL,
-  ]) {
-    if (value?.startsWith("postgres")) return value;
+  const preferred = [
+    "POSTGRES_PRISMA_URL",
+    "POSTGRES_URL",
+    "POSTGRES_DATABASE_URL",
+    "POSTGRES_URL_NON_POOLING",
+    "POSTGRES_DATABASE_URL_UNPOOLED",
+    "DATABASE_URL_UNPOOLED",
+    "DATABASE_URL",
+  ];
+
+  for (const key of preferred) {
+    const value = process.env[key];
+    if (isPostgresUrl(value)) return value as string;
   }
+
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!/(POSTGRES|DATABASE|NEON|STORAGE)/i.test(key)) continue;
+    if (isPostgresUrl(value)) return value as string;
+  }
+
   return "";
 }
 
@@ -23,7 +39,11 @@ export async function persistWebsiteEnquiryPostgres(input: {
   contact: string;
 }) {
   const url = postgresUrl();
-  if (!url) return null;
+  if (!url) {
+    const keys = Object.keys(process.env).filter((key) => /(POSTGRES|DATABASE|NEON|STORAGE)/i.test(key));
+    console.error("enquiry postgres: no postgres url in env", keys);
+    return null;
+  }
 
   const sql = neon(url);
   await sql`
