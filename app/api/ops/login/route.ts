@@ -1,9 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { postgresConfigured } from "@/lib/ops/enquiry-postgres";
+import { listWebsiteEnquiries, postgresConfigured } from "@/lib/ops/enquiry-postgres";
 import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { createOpsSession } from "@/lib/ops/session-store";
 import { rateLimit } from "@/lib/ops/rate-limit";
+import { getWhatsAppDisplayPhone, normalizeWaPhone } from "@/lib/ops/whatsapp";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,20 @@ function fail(request: NextRequest, code: string) {
   return NextResponse.redirect(url, 303);
 }
 
+function scrub(value: string) {
+  return value.replace(/\d+/g, "#").slice(0, 180);
+}
+
 export async function GET() {
+  const notify = normalizeWaPhone(runtimeEnv("OPS_NOTIFY_PHONE"));
+  let from = "";
+  try {
+    from = await getWhatsAppDisplayPhone();
+  } catch {
+    from = "";
+  }
+  const latest = (await listWebsiteEnquiries(1))[0];
+
   return NextResponse.json({
     passwordReady: envValue("OPS_PASSWORD").length >= 8,
     emailReady: Boolean(envValue("OPS_EMAIL")),
@@ -37,8 +51,17 @@ export async function GET() {
       .filter((key) => /^(OPS_|SESSION_|POSTGRES_|DATABASE_)/.test(key))
       .sort(),
     rawPasswordReady: runtimeEnv("OPS_PASSWORD").length >= 8,
-    notifyPhoneReady: runtimeEnv("OPS_NOTIFY_PHONE").replace(/\D/g, "").length >= 10,
+    notifyPhoneReady: notify.length >= 10,
+    notifyLooksNigerian: notify.startsWith("234"),
     whatsappReady: Boolean(runtimeEnv("WHATSAPP_ACCESS_TOKEN") && runtimeEnv("WHATSAPP_PHONE_NUMBER_ID")),
+    graphOk: Boolean(from),
+    notifyIsSendingNumber: Boolean(from && (from === notify || from.endsWith(notify) || notify.endsWith(from))),
+    lastEnquiryPing: latest
+      ? {
+          sent: Boolean(latest.notifiedAt),
+          error: latest.notifyError ? scrub(latest.notifyError) : null,
+        }
+      : null,
   });
 }
 
