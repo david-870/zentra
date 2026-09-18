@@ -33,6 +33,17 @@ export function normalizeWaPhone(value: string) {
   return value.replace(/\D/g, "");
 }
 
+export async function getWhatsAppDisplayPhone() {
+  if (!whatsappConfigured()) return "";
+  const response = await fetch(
+    `${GRAPH}/${opsConfig.whatsapp.phoneNumberId}?fields=display_phone_number`,
+    { headers: { Authorization: `Bearer ${opsConfig.whatsapp.accessToken}` } },
+  );
+  if (!response.ok) return "";
+  const data = (await response.json()) as { display_phone_number?: string };
+  return normalizeWaPhone(data.display_phone_number ?? "");
+}
+
 export async function sendWhatsAppText(to: string, body: string) {
   return graphSend({ to: normalizeWaPhone(to), type: "text", text: { body, preview_url: false } });
 }

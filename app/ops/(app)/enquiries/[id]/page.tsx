@@ -43,7 +43,7 @@ export default async function EnquiryPage({ params }: { params: Promise<{ id: st
         {rows.map((row) => (
           <div key={row.label} className="flex justify-between gap-4 border-b border-line py-2">
             <dt className="text-muted">{row.label}</dt>
-            <dd className="text-right">{row.value}</dd>
+            <dd className="max-w-[28ch] text-right break-words">{row.value}</dd>
           </div>
         ))}
       </dl>

@@ -6,8 +6,15 @@ import {
   persistWebsiteEnquiryPostgres,
 } from "@/lib/ops/enquiry-postgres";
 import { notify } from "@/lib/ops/notify";
+import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { ensureSeed } from "@/lib/ops/seed";
-import { sendWhatsAppTemplate, sendWhatsAppText, whatsappConfigured } from "@/lib/ops/whatsapp";
+import {
+  getWhatsAppDisplayPhone,
+  normalizeWaPhone,
+  sendWhatsAppTemplate,
+  sendWhatsAppText,
+  whatsappConfigured,
+} from "@/lib/ops/whatsapp";
 
 type EnquiryInput = {
   name: string;
@@ -62,9 +69,20 @@ async function persistWebsiteEnquiryLead(input: EnquiryInput) {
 }
 
 async function notifyOwnerWhatsApp(input: EnquiryInput) {
-  if (!whatsappConfigured()) return false;
-  const to = notifyPhone();
-  if (!to) return false;
+  if (!whatsappConfigured()) {
+    throw new Error("WhatsApp Cloud API token is not available to this deployment.");
+  }
+  const to = normalizeWaPhone(notifyPhone());
+  if (!to) {
+    throw new Error("No WhatsApp number to ping. Set OPS_NOTIFY_PHONE in Vercel.");
+  }
+
+  const from = await getWhatsAppDisplayPhone();
+  if (from && (from === to || from.endsWith(to) || to.endsWith(from))) {
+    throw new Error(
+      "Cloud API cannot message the same WhatsApp number it sends from. Set OPS_NOTIFY_PHONE to your personal WhatsApp.",
+    );
+  }
 
   const body = [
     "New website enquiry",
@@ -80,17 +98,32 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
     await sendWhatsAppText(to, body);
     return true;
   } catch (error) {
-    const template = process.env.WHATSAPP_NOTIFY_TEMPLATE?.trim();
-    const language = process.env.WHATSAPP_NOTIFY_TEMPLATE_LANG?.trim() || "en_US";
-    if (!template) throw error;
-    await sendWhatsAppTemplate(to, template, language, [
-      input.name,
-      input.business,
-      input.need,
-      input.phone,
-      input.email,
-    ]);
-    return true;
+    const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
+    const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
+    try {
+      await sendWhatsAppTemplate(to, template, language, template === "hello_world" ? [] : [
+        input.name,
+        input.business,
+        input.need,
+        input.phone,
+        input.email,
+      ]);
+      return true;
+    } catch {
+      throw error;
+    }
+  }
+}
+
+async function recordNotify(neonId: string | null, input: EnquiryInput) {
+  try {
+    await notifyOwnerWhatsApp(input);
+    if (neonId) await markEnquiryNotified(neonId);
+  } catch (error) {
+    console.error(error);
+    if (neonId) {
+      await markEnquiryNotified(neonId, error instanceof Error ? error.message : "WhatsApp notify failed");
+    }
   }
 }
 
@@ -116,13 +149,7 @@ export async function createWebsiteEnquiry(input: EnquiryInput) {
 
   try {
     const lead = await persistWebsiteEnquiryLead(input);
-    try {
-      await notifyOwnerWhatsApp(input);
-      if (neonId) await markEnquiryNotified(neonId);
-    } catch (error) {
-      console.error(error);
-      if (neonId) await markEnquiryNotified(neonId, error instanceof Error ? error.message : "WhatsApp notify failed");
-    }
+    await recordNotify(neonId, input);
     return lead;
   } catch (error) {
     errors.push(error);
@@ -130,20 +157,13 @@ export async function createWebsiteEnquiry(input: EnquiryInput) {
   }
 
   if (neonId) {
-    try {
-      await notifyOwnerWhatsApp(input);
-      await markEnquiryNotified(neonId);
-    } catch (error) {
-      console.error(error);
-      await markEnquiryNotified(neonId, error instanceof Error ? error.message : "WhatsApp notify failed");
-    }
+    await recordNotify(neonId, input);
     return { id: neonId };
   }
 
   try {
-    if (await notifyOwnerWhatsApp(input)) {
-      return { id: "notified" };
-    }
+    await notifyOwnerWhatsApp(input);
+    return { id: "notified" };
   } catch (error) {
     errors.push(error);
     console.error(error);

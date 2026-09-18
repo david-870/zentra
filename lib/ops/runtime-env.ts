@@ -28,5 +28,14 @@ function rawProcessEnv() {
 }
 
 export function runtimeEnv(name: string) {
-  return clean(rawProcessEnv()[name] || process.env[name]);
+  const fromProc = clean(rawProcessEnv()[name]);
+  if (fromProc) return fromProc;
+
+  for (const [key, value] of Object.entries(process.env)) {
+    if (key !== name) continue;
+    const cleaned = clean(value);
+    if (cleaned) return cleaned;
+  }
+
+  return clean(process.env[name]);
 }
