@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { loginAction } from "@/app/ops/actions";
 import { Logo } from "@/components/brand/Logo";
 import { opsPasswordReady } from "@/lib/ops/config";
@@ -8,6 +9,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await connection();
   await safeEnsureSeed();
   const query = await searchParams;
   const ready = opsPasswordReady();
@@ -16,26 +18,25 @@ export default async function LoginPage({
       <Logo className="text-4xl" />
       <p className="mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">Ops</p>
       <p className="mt-3 text-muted">Internal enquiry inbox.</p>
-      {ready ? (
-        <form action={loginAction} className="mt-10 grid gap-4">
-          <label className="text-xs tracking-[0.08em] uppercase">
-            Email
-            <input name="email" type="email" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
-          </label>
-          <label className="text-xs tracking-[0.08em] uppercase">
-            Password
-            <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
-          </label>
-          {query.error ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
-          <button type="submit" className="mt-2 min-h-12 bg-white text-sm tracking-[0.08em] text-black uppercase">
-            Enter
-          </button>
-        </form>
-      ) : (
-        <p className="mt-10 text-sm text-muted">
-          Add OPS_EMAIL and OPS_PASSWORD in Vercel environment variables, then redeploy.
-        </p>
-      )}
+      <form action={loginAction} className="mt-10 grid gap-4">
+        <label className="text-xs tracking-[0.08em] uppercase">
+          Email
+          <input name="email" type="email" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
+        </label>
+        <label className="text-xs tracking-[0.08em] uppercase">
+          Password
+          <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
+        </label>
+        {query.error ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
+        {ready ? null : (
+          <p className="text-sm text-muted">
+            Set OPS_PASSWORD in Vercel to the same password as your local `.env`, then redeploy.
+          </p>
+        )}
+        <button type="submit" className="mt-2 min-h-12 bg-white text-sm tracking-[0.08em] text-black uppercase">
+          Enter
+        </button>
+      </form>
     </main>
   );
 }
