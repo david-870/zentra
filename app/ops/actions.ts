@@ -3,6 +3,7 @@
 import { LeadStatus, ConversationControl } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createSession, destroySession, envOpsUser, requireUser, sameText, verifyPassword } from "@/lib/ops/auth";
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
@@ -22,9 +23,10 @@ function refreshOps(leadId?: string) {
 }
 
 export async function loginAction(formData: FormData) {
+  await connection();
   await safeEnsureSeed();
   const email = String(formData.get("email") ?? "").toLowerCase().trim();
-  const password = String(formData.get("password") ?? "");
+  const password = String(formData.get("password") ?? "").trim();
 
   let user = null;
   try {
@@ -33,15 +35,29 @@ export async function loginAction(formData: FormData) {
     console.error(error);
   }
 
-  if (user && verifyPassword(password, user.passwordHash)) {
-    await createSession(user.id);
-    redirect("/ops");
-  }
+  try {
+    if (user && verifyPassword(password, user.passwordHash)) {
+      await createSession(user.id);
+      redirect("/ops");
+    }
 
-  const envUser = envOpsUser();
-  if (envUser && sameText(email, envUser.email) && sameText(password, opsConfig.ops.password)) {
-    await createSession(envUser.id);
-    redirect("/ops");
+    const envUser = envOpsUser();
+    const expectedEmail = opsConfig.ops.email;
+    const expectedPassword = opsConfig.ops.password;
+    if (
+      envUser &&
+      expectedPassword &&
+      email === expectedEmail &&
+      sameText(password, expectedPassword)
+    ) {
+      await createSession(envUser.id);
+      redirect("/ops");
+    }
+  } catch (error) {
+    if (typeof error === "object" && error && "digest" in error) {
+      throw error;
+    }
+    console.error("ops login failed", error);
   }
 
   redirect("/ops/login?error=1");

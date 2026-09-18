@@ -16,6 +16,7 @@ export default async function LoginPage({
       <Logo className="text-4xl" />
       <p className="mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">Ops</p>
       <p className="mt-3 text-muted">Internal enquiry inbox.</p>
+      <p className="mt-2 text-sm text-muted">Use OPS_EMAIL and OPS_PASSWORD from Vercel — not a personal Gmail login.</p>
       <form action={loginAction} className="mt-10 grid gap-4">
         <label className="text-xs tracking-[0.08em] uppercase">
           Email

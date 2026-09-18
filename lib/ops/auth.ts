@@ -2,6 +2,7 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { cookies } from "next/headers";
 import { db } from "@/lib/ops/db";
 import { opsConfig } from "@/lib/ops/config";
+import { readEnv } from "@/lib/ops/env";
 
 const COOKIE = "zentra_ops";
 export const ENV_OPS_USER_ID = "ops-env";
@@ -13,9 +14,9 @@ export type OpsUser = {
 };
 
 function secret() {
-  const value = process.env.SESSION_SECRET;
-  if (value && value.length >= 16) return value;
-  const fallback = process.env.OPS_PASSWORD || process.env.WHATSAPP_VERIFY_TOKEN || "";
+  const value = readEnv("SESSION_SECRET");
+  if (value.length >= 16) return value;
+  const fallback = readEnv("OPS_PASSWORD") || readEnv("WHATSAPP_VERIFY_TOKEN");
   if (fallback.length >= 8) {
     return createHmac("sha256", "zentra-ops-session").update(fallback).digest("hex");
   }
