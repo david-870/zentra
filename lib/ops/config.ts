@@ -1,24 +1,52 @@
 export const opsConfig = {
-  appUrl: process.env.APP_URL ?? "http://localhost:3000",
-  webhookUrl: process.env.WEBHOOK_URL ?? "http://localhost:3000/api/whatsapp/webhook",
+  get appUrl() {
+    return process.env.APP_URL ?? "http://localhost:3000";
+  },
+  get webhookUrl() {
+    return process.env.WEBHOOK_URL ?? "http://localhost:3000/api/whatsapp/webhook";
+  },
   whatsapp: {
-    accessToken: process.env.WHATSAPP_ACCESS_TOKEN ?? "",
-    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID ?? "",
-    businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID ?? "",
-    verifyToken: process.env.WHATSAPP_VERIFY_TOKEN ?? "",
-    appSecret: process.env.WHATSAPP_APP_SECRET ?? "",
+    get accessToken() {
+      return process.env.WHATSAPP_ACCESS_TOKEN ?? "";
+    },
+    get phoneNumberId() {
+      return process.env.WHATSAPP_PHONE_NUMBER_ID ?? "";
+    },
+    get businessAccountId() {
+      return process.env.WHATSAPP_BUSINESS_ACCOUNT_ID ?? "";
+    },
+    get verifyToken() {
+      return process.env.WHATSAPP_VERIFY_TOKEN ?? "";
+    },
+    get appSecret() {
+      return process.env.WHATSAPP_APP_SECRET ?? "";
+    },
   },
   ai: {
-    apiKey: process.env.AI_API_KEY ?? "",
-    baseUrl: process.env.AI_BASE_URL ?? "https://api.openai.com/v1",
-    model: process.env.AI_MODEL ?? "gpt-4o-mini",
+    get apiKey() {
+      return process.env.AI_API_KEY ?? "";
+    },
+    get baseUrl() {
+      return process.env.AI_BASE_URL ?? "https://api.openai.com/v1";
+    },
+    get model() {
+      return process.env.AI_MODEL ?? "gpt-4o-mini";
+    },
   },
   ops: {
-    email: process.env.OPS_EMAIL ?? "david@zentra.local",
-    password: process.env.OPS_PASSWORD || process.env.WHATSAPP_VERIFY_TOKEN || "",
-    notifyPhone: process.env.OPS_NOTIFY_PHONE ?? "",
+    get email() {
+      return (process.env.OPS_EMAIL ?? "david@zentra.local").toLowerCase();
+    },
+    get password() {
+      return process.env.OPS_PASSWORD || process.env.WHATSAPP_VERIFY_TOKEN || "";
+    },
+    get notifyPhone() {
+      return process.env.OPS_NOTIFY_PHONE ?? "";
+    },
   },
-  cronSecret: process.env.CRON_SECRET ?? "",
+  get cronSecret() {
+    return process.env.CRON_SECRET ?? "";
+  },
 };
 
 export function opsPasswordReady() {
