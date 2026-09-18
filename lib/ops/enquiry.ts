@@ -1,6 +1,9 @@
+import { site } from "@/content/site";
 import { db } from "@/lib/ops/db";
+import { persistWebsiteEnquiryPostgres } from "@/lib/ops/enquiry-postgres";
 import { notify } from "@/lib/ops/notify";
 import { ensureSeed } from "@/lib/ops/seed";
+import { sendWhatsAppText, whatsappConfigured } from "@/lib/ops/whatsapp";
 
 function parseContact(value: string) {
   const trimmed = value.trim();
@@ -10,7 +13,7 @@ function parseContact(value: string) {
   return { email, phone, raw: trimmed };
 }
 
-export async function createWebsiteEnquiry(input: {
+async function persistWebsiteEnquiryLead(input: {
   name: string;
   business: string;
   need: string;
@@ -48,4 +51,74 @@ export async function createWebsiteEnquiry(input: {
   });
 
   return lead;
+}
+
+async function notifyOwnerWhatsApp(input: {
+  name: string;
+  business: string;
+  need: string;
+  contact: string;
+}) {
+  if (!whatsappConfigured()) return false;
+  const to = process.env.OPS_NOTIFY_PHONE || site.whatsapp.e164;
+  if (!to) return false;
+  await sendWhatsAppText(
+    to,
+    [
+      "New website enquiry",
+      `Name: ${input.name}`,
+      `Business: ${input.business}`,
+      `Need: ${input.need}`,
+      `Contact: ${input.contact}`,
+    ].join("\n"),
+  );
+  return true;
+}
+
+export async function createWebsiteEnquiry(input: {
+  name: string;
+  business: string;
+  need: string;
+  contact: string;
+}) {
+  const errors: unknown[] = [];
+
+  try {
+    const lead = await persistWebsiteEnquiryLead(input);
+    try {
+      await notifyOwnerWhatsApp(input);
+    } catch (error) {
+      console.error(error);
+    }
+    return lead;
+  } catch (error) {
+    errors.push(error);
+    console.error(error);
+  }
+
+  try {
+    const id = await persistWebsiteEnquiryPostgres(input);
+    if (id) {
+      try {
+        await notifyOwnerWhatsApp(input);
+      } catch (error) {
+        console.error(error);
+      }
+      return { id };
+    }
+  } catch (error) {
+    errors.push(error);
+    console.error(error);
+  }
+
+  try {
+    if (await notifyOwnerWhatsApp(input)) {
+      return { id: "notified" };
+    }
+  } catch (error) {
+    errors.push(error);
+    console.error(error);
+  }
+
+  throw errors[0] ?? new Error("Could not store the enquiry.");
 }

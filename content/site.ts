@@ -7,7 +7,11 @@ export const site = {
     display: "09131918185",
     e164: "2349131918185",
   },
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  url:
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000"),
   social: {
     linkedin: "https://www.linkedin.com/",
     instagram: "https://www.instagram.com/",
