@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import { loginAction } from "@/app/ops/actions";
 import { Logo } from "@/components/brand/Logo";
+import { opsConfig, opsPasswordReady } from "@/lib/ops/config";
 import { safeEnsureSeed } from "@/lib/ops/seed";
 
 export default async function LoginPage({
@@ -16,17 +17,26 @@ export default async function LoginPage({
       <Logo className="text-4xl" />
       <p className="mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">Ops</p>
       <p className="mt-3 text-muted">Internal enquiry inbox.</p>
-      <p className="mt-2 text-sm text-muted">Use OPS_EMAIL and OPS_PASSWORD from Vercel — not a personal Gmail login.</p>
+      <p className="mt-2 text-sm text-muted">Sign in with {opsConfig.ops.email}</p>
       <form action={loginAction} className="mt-10 grid gap-4">
         <label className="text-xs tracking-[0.08em] uppercase">
           Email
-          <input name="email" type="email" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
+          <input
+            name="email"
+            type="email"
+            required
+            defaultValue={opsConfig.ops.email}
+            className="mt-2 w-full border border-line bg-raised px-3 py-3"
+          />
         </label>
         <label className="text-xs tracking-[0.08em] uppercase">
           Password
           <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
         </label>
         {query.error ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
+        {opsPasswordReady() ? null : (
+          <p className="text-sm text-muted">OPS_PASSWORD is not available on this deployment yet.</p>
+        )}
         <button type="submit" className="mt-2 min-h-12 bg-white text-sm tracking-[0.08em] text-black uppercase">
           Enter
         </button>
