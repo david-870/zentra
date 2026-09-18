@@ -15,7 +15,12 @@ export const opsConfig = {
   },
   ops: {
     email: process.env.OPS_EMAIL ?? "david@zentra.local",
-    password: process.env.OPS_PASSWORD ?? "",
+    password: process.env.OPS_PASSWORD || process.env.WHATSAPP_VERIFY_TOKEN || "",
+    notifyPhone: process.env.OPS_NOTIFY_PHONE ?? "",
   },
   cronSecret: process.env.CRON_SECRET ?? "",
 };
+
+export function opsPasswordReady() {
+  return opsConfig.ops.password.length >= 8;
+}

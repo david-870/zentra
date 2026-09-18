@@ -1,5 +1,19 @@
 import { neon } from "@neondatabase/serverless";
 
+export type WebsiteEnquiry = {
+  id: string;
+  name: string;
+  business: string;
+  need: string;
+  contact: string;
+  phone: string;
+  email: string;
+  website: string;
+  createdAt: Date;
+  notifiedAt: Date | null;
+  notifyError: string | null;
+};
+
 function isPostgresUrl(value?: string) {
   return Boolean(value && /^postgres(ql)?:\/\//i.test(value));
 }
@@ -32,20 +46,25 @@ export function postgresConfigured() {
   return Boolean(postgresUrl());
 }
 
-export async function persistWebsiteEnquiryPostgres(input: {
-  name: string;
-  business: string;
-  need: string;
-  contact: string;
-}) {
+function client() {
   const url = postgresUrl();
-  if (!url) {
-    const keys = Object.keys(process.env).filter((key) => /(POSTGRES|DATABASE|NEON|STORAGE)/i.test(key));
-    console.error("enquiry postgres: no postgres url in env", keys);
-    return null;
+  if (!url) return null;
+  return neon(url);
+}
+
+export function splitContact(contact: string, phone = "", email = "", website = "") {
+  if (phone || email || website) {
+    return { phone, email, website };
   }
 
-  const sql = neon(url);
+  const parts = contact.split("·").map((part) => part.trim()).filter(Boolean);
+  const foundEmail = parts.find((part) => part.includes("@")) ?? "";
+  const foundPhone = parts.find((part) => part.replace(/\D/g, "").length >= 10 && !part.includes("@")) ?? "";
+  const foundWebsite = parts.find((part) => part !== foundEmail && part !== foundPhone) ?? "";
+  return { phone: foundPhone, email: foundEmail, website: foundWebsite };
+}
+
+async function ensureEnquiryTable(sql: NonNullable<ReturnType<typeof client>>) {
   await sql`
     CREATE TABLE IF NOT EXISTS website_enquiries (
       id text PRIMARY KEY,
@@ -56,11 +75,128 @@ export async function persistWebsiteEnquiryPostgres(input: {
       created_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS phone text NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS email text NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS website text NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS notified_at timestamptz`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS notify_error text`;
+}
 
+function mapRow(row: Record<string, unknown>): WebsiteEnquiry {
+  const contact = String(row.contact ?? "");
+  const parsed = splitContact(
+    contact,
+    String(row.phone ?? ""),
+    String(row.email ?? ""),
+    String(row.website ?? ""),
+  );
+
+  return {
+    id: String(row.id),
+    name: String(row.name ?? ""),
+    business: String(row.business ?? ""),
+    need: String(row.need ?? ""),
+    contact,
+    phone: parsed.phone,
+    email: parsed.email,
+    website: parsed.website,
+    createdAt: new Date(String(row.created_at ?? Date.now())),
+    notifiedAt: row.notified_at ? new Date(String(row.notified_at)) : null,
+    notifyError: row.notify_error ? String(row.notify_error) : null,
+  };
+}
+
+export async function persistWebsiteEnquiryPostgres(input: {
+  name: string;
+  business: string;
+  need: string;
+  contact: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+}) {
+  const sql = client();
+  if (!sql) {
+    const keys = Object.keys(process.env).filter((key) => /(POSTGRES|DATABASE|NEON|STORAGE)/i.test(key));
+    console.error("enquiry postgres: no postgres url in env", keys);
+    return null;
+  }
+
+  await ensureEnquiryTable(sql);
+
+  const parsed = splitContact(input.contact, input.phone, input.email, input.website);
   const id = crypto.randomUUID();
   await sql`
-    INSERT INTO website_enquiries (id, name, business, need, contact)
-    VALUES (${id}, ${input.name}, ${input.business}, ${input.need}, ${input.contact})
+    INSERT INTO website_enquiries (id, name, business, need, contact, phone, email, website)
+    VALUES (
+      ${id},
+      ${input.name},
+      ${input.business},
+      ${input.need},
+      ${input.contact},
+      ${parsed.phone},
+      ${parsed.email},
+      ${parsed.website}
+    )
   `;
   return id;
+}
+
+export async function listWebsiteEnquiries(limit = 100) {
+  const sql = client();
+  if (!sql) return [];
+  try {
+    await ensureEnquiryTable(sql);
+    const rows = (await sql`
+      SELECT id, name, business, need, contact, phone, email, website, created_at, notified_at, notify_error
+      FROM website_enquiries
+      ORDER BY created_at DESC
+      LIMIT ${limit}
+    `) as Record<string, unknown>[];
+    return rows.map(mapRow);
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getWebsiteEnquiry(id: string) {
+  const sql = client();
+  if (!sql) return null;
+  try {
+    await ensureEnquiryTable(sql);
+    const rows = (await sql`
+      SELECT id, name, business, need, contact, phone, email, website, created_at, notified_at, notify_error
+      FROM website_enquiries
+      WHERE id = ${id}
+      LIMIT 1
+    `) as Record<string, unknown>[];
+    return rows[0] ? mapRow(rows[0]) : null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function markEnquiryNotified(id: string, error?: string) {
+  const sql = client();
+  if (!sql) return;
+  try {
+    await ensureEnquiryTable(sql);
+    if (error) {
+      await sql`
+        UPDATE website_enquiries
+        SET notify_error = ${error.slice(0, 400)}
+        WHERE id = ${id}
+      `;
+      return;
+    }
+    await sql`
+      UPDATE website_enquiries
+      SET notified_at = now(), notify_error = NULL
+      WHERE id = ${id}
+    `;
+  } catch (caught) {
+    console.error(caught);
+  }
 }

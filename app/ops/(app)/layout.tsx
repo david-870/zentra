@@ -2,11 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/ops/auth";
 import { db } from "@/lib/ops/db";
-import { ensureSeed } from "@/lib/ops/seed";
+import { safeEnsureSeed } from "@/lib/ops/seed";
 import { logoutAction, markNotificationsRead } from "@/app/ops/actions";
 import { Logo } from "@/components/brand/Logo";
 
 const nav = [
+  { href: "/ops/enquiries", label: "Enquiries" },
   { href: "/ops", label: "Overview" },
   { href: "/ops/leads", label: "Pipeline" },
   { href: "/ops/analytics", label: "Analytics" },
@@ -14,11 +15,16 @@ const nav = [
 ];
 
 export default async function OpsAppLayout({ children }: { children: React.ReactNode }) {
-  await ensureSeed();
+  await safeEnsureSeed();
   const user = await requireUser();
   if (!user) redirect("/ops/login");
 
-  const unread = await db.notification.count({ where: { read: false } });
+  let unread = 0;
+  try {
+    unread = await db.notification.count({ where: { read: false } });
+  } catch (error) {
+    console.error(error);
+  }
 
   return (
     <div className="min-h-dvh bg-bg">

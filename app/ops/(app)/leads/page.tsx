@@ -16,12 +16,38 @@ const columns: LeadStatus[] = [
 ];
 
 export default async function PipelinePage() {
-  const leads = await db.lead.findMany({
-    orderBy: { updatedAt: "desc" },
-    include: {
-      conversation: { include: { messages: { orderBy: { createdAt: "desc" }, take: 1 } } },
-    },
-  });
+  let leads: Array<{
+    id: string;
+    name: string | null;
+    businessName: string | null;
+    phone: string;
+    packageInterest: string | null;
+    serviceInterest: string | null;
+    score: number;
+    status: LeadStatus;
+    conversation: { messages: { text: string }[] } | null;
+  }> = [];
+  try {
+    leads = await db.lead.findMany({
+      orderBy: { updatedAt: "desc" },
+      include: {
+        conversation: { include: { messages: { orderBy: { createdAt: "desc" }, take: 1 } } },
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return (
+      <div>
+        <h1 className="font-display text-4xl">Pipeline</h1>
+        <p className="mt-2 text-sm text-muted">
+          WhatsApp pipeline needs a durable database. Website enquiries are in the inbox.
+        </p>
+        <Link href="/ops/enquiries" className="mt-6 inline-flex min-h-12 items-center bg-white px-5 text-xs tracking-[0.08em] text-black uppercase">
+          Open enquiries
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div>

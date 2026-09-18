@@ -2,8 +2,9 @@ import { db } from "@/lib/ops/db";
 import { updateKnowledge } from "@/app/ops/actions";
 
 export default async function KnowledgePage() {
-  const items = await db.knowledgeBaseItem.findMany({ orderBy: { title: "asc" } });
-  const packs = await db.package.findMany({ orderBy: { sortOrder: "asc" } });
+  try {
+    const items = await db.knowledgeBaseItem.findMany({ orderBy: { title: "asc" } });
+    const packs = await db.package.findMany({ orderBy: { sortOrder: "asc" } });
 
   return (
     <div className="grid gap-10">
@@ -37,5 +38,14 @@ export default async function KnowledgePage() {
         </ul>
       </section>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error(error);
+    return (
+      <div>
+        <h1 className="font-display text-4xl">Knowledge</h1>
+        <p className="mt-2 text-sm text-muted">Knowledge for the WhatsApp assistant will show once that database is live.</p>
+      </div>
+    );
+  }
 }

@@ -37,6 +37,31 @@ export async function sendWhatsAppText(to: string, body: string) {
   return graphSend({ to: normalizeWaPhone(to), type: "text", text: { body, preview_url: false } });
 }
 
+function templateText(value: string) {
+  const clean = value.replace(/\s+/g, " ").trim();
+  return (clean || "-").slice(0, 512);
+}
+
+export async function sendWhatsAppTemplate(to: string, name: string, language: string, bodyParams: string[]) {
+  return graphSend({
+    to: normalizeWaPhone(to),
+    type: "template",
+    template: {
+      name,
+      language: { code: language },
+      components:
+        bodyParams.length > 0
+          ? [
+              {
+                type: "body",
+                parameters: bodyParams.map((text) => ({ type: "text", text: templateText(text) })),
+              },
+            ]
+          : undefined,
+    },
+  });
+}
+
 export async function sendWhatsAppList(
   to: string,
   body: string,

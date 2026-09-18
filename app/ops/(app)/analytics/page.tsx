@@ -1,7 +1,18 @@
 import { db } from "@/lib/ops/db";
 
 export default async function AnalyticsPage() {
-  const leads = await db.lead.findMany();
+  let leads: Awaited<ReturnType<typeof db.lead.findMany>> = [];
+  try {
+    leads = await db.lead.findMany();
+  } catch (error) {
+    console.error(error);
+    return (
+      <div>
+        <h1 className="font-display text-4xl">Analytics</h1>
+        <p className="mt-2 text-sm text-muted">Analytics for WhatsApp conversations will show once that database is live.</p>
+      </div>
+    );
+  }
   const total = leads.length;
   const qualified = leads.filter((item) => ["QUALIFIED", "PROPOSAL", "NEGOTIATION", "WON"].includes(item.status)).length;
   const proposal = leads.filter((item) => item.status === "PROPOSAL").length;

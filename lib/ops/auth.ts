@@ -1,15 +1,41 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { db } from "@/lib/ops/db";
+import { opsConfig } from "@/lib/ops/config";
 
 const COOKIE = "zentra_ops";
+export const ENV_OPS_USER_ID = "ops-env";
+
+export type OpsUser = {
+  id: string;
+  email: string;
+  name: string;
+};
 
 function secret() {
   const value = process.env.SESSION_SECRET;
-  if (!value || value.length < 16) {
-    throw new Error("SESSION_SECRET is missing or too short.");
+  if (value && value.length >= 16) return value;
+  const fallback = process.env.OPS_PASSWORD || process.env.WHATSAPP_VERIFY_TOKEN || "";
+  if (fallback.length >= 8) {
+    return createHmac("sha256", "zentra-ops-session").update(fallback).digest("hex");
   }
-  return value;
+  throw new Error("SESSION_SECRET is missing or too short.");
+}
+
+export function envOpsUser(): OpsUser | null {
+  if (!opsConfig.ops.password) return null;
+  return {
+    id: ENV_OPS_USER_ID,
+    email: opsConfig.ops.email.toLowerCase(),
+    name: "David",
+  };
+}
+
+export function sameText(left: string, right: string) {
+  const a = Buffer.from(left);
+  const b = Buffer.from(right);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 export function hashPassword(password: string) {
@@ -49,7 +75,7 @@ export async function destroySession() {
   jar.delete(COOKIE);
 }
 
-export async function getSessionUser() {
+export async function getSessionUser(): Promise<OpsUser | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
@@ -57,7 +83,14 @@ export async function getSessionUser() {
   if (parts.length !== 3) return null;
   const [userId, issued, signature] = parts;
   if (sign(`${userId}.${issued}`) !== signature) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  if (userId === ENV_OPS_USER_ID) return envOpsUser();
+  try {
+    const user = await db.user.findUnique({ where: { id: userId } });
+    if (user) return { id: user.id, email: user.email, name: user.name };
+  } catch (error) {
+    console.error(error);
+  }
+  return null;
 }
 
 export async function requireUser() {

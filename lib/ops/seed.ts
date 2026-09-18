@@ -128,3 +128,11 @@ export async function ensureSeed() {
     await db.user.update({ where: { id: user.id }, data: { passwordHash } });
   }
 }
+
+export async function safeEnsureSeed() {
+  try {
+    await ensureSeed();
+  } catch (error) {
+    console.error("ops seed skipped", error);
+  }
+}

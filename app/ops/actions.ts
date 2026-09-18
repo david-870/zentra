@@ -3,16 +3,18 @@
 import { LeadStatus, ConversationControl } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createSession, destroySession, requireUser, verifyPassword } from "@/lib/ops/auth";
+import { createSession, destroySession, envOpsUser, requireUser, sameText, verifyPassword } from "@/lib/ops/auth";
+import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 import { runDueFollowUps } from "@/lib/ops/followups";
 import { notify } from "@/lib/ops/notify";
 import { sendWhatsAppText } from "@/lib/ops/whatsapp";
 import { processCustomerText } from "@/lib/ops/engine";
-import { ensureSeed } from "@/lib/ops/seed";
+import { ensureSeed, safeEnsureSeed } from "@/lib/ops/seed";
 
 function refreshOps(leadId?: string) {
   revalidatePath("/ops");
+  revalidatePath("/ops/enquiries");
   revalidatePath("/ops/leads");
   revalidatePath("/ops/analytics");
   revalidatePath("/ops/knowledge");
@@ -20,15 +22,29 @@ function refreshOps(leadId?: string) {
 }
 
 export async function loginAction(formData: FormData) {
-  await ensureSeed();
+  await safeEnsureSeed();
   const email = String(formData.get("email") ?? "").toLowerCase().trim();
   const password = String(formData.get("password") ?? "");
-  const user = await db.user.findUnique({ where: { email } });
-  if (!user || !verifyPassword(password, user.passwordHash)) {
-    redirect("/ops/login?error=1");
+
+  let user = null;
+  try {
+    user = await db.user.findUnique({ where: { email } });
+  } catch (error) {
+    console.error(error);
   }
-  await createSession(user.id);
-  redirect("/ops");
+
+  if (user && verifyPassword(password, user.passwordHash)) {
+    await createSession(user.id);
+    redirect("/ops");
+  }
+
+  const envUser = envOpsUser();
+  if (envUser && sameText(email, envUser.email) && sameText(password, opsConfig.ops.password)) {
+    await createSession(envUser.id);
+    redirect("/ops");
+  }
+
+  redirect("/ops/login?error=1");
 }
 
 export async function logoutAction() {
@@ -168,7 +184,11 @@ export async function simulateInbound(formData: FormData) {
 export async function markNotificationsRead() {
   const user = await requireUser();
   if (!user) redirect("/ops/login");
-  await db.notification.updateMany({ where: { read: false }, data: { read: true } });
+  try {
+    await db.notification.updateMany({ where: { read: false }, data: { read: true } });
+  } catch (error) {
+    console.error(error);
+  }
   refreshOps();
 }
 
