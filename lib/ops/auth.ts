@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { db } from "@/lib/ops/db";
 import { opsConfig } from "@/lib/ops/config";
 import { runtimeEnv } from "@/lib/ops/runtime-env";
+import { deleteOpsSession, opsSessionValid } from "@/lib/ops/session-store";
 
 const COOKIE = "zentra_ops";
 export const ENV_OPS_USER_ID = "ops-env";
@@ -73,6 +74,14 @@ export async function createSession(userId: string) {
 
 export async function destroySession() {
   const jar = await cookies();
+  const token = jar.get(COOKIE)?.value;
+  if (token) {
+    try {
+      await deleteOpsSession(token);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   jar.delete(COOKIE);
 }
 
@@ -80,6 +89,19 @@ export async function getSessionUser(): Promise<OpsUser | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
   if (!token) return null;
+
+  try {
+    if (await opsSessionValid(token)) {
+      return {
+        id: ENV_OPS_USER_ID,
+        email: opsConfig.ops.email,
+        name: "David",
+      };
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
   const parts = token.split(".");
   if (parts.length !== 3) return null;
   const [userId, issued, signature] = parts;

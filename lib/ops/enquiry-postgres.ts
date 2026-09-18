@@ -46,10 +46,14 @@ export function postgresConfigured() {
   return Boolean(postgresUrl());
 }
 
-function client() {
+export function postgresClient() {
   const url = postgresUrl();
   if (!url) return null;
   return neon(url);
+}
+
+function client() {
+  return postgresClient();
 }
 
 export function splitContact(contact: string, phone = "", email = "", website = "") {
