@@ -1,5 +1,4 @@
 import { home } from "@/content/home";
-import { site } from "@/content/site";
 import { InquiryForm } from "@/components/forms/InquiryForm";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
@@ -19,7 +18,7 @@ export function FinalCta() {
             rel="noopener noreferrer"
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase sm:w-auto"
           >
-            WhatsApp {site.whatsapp.display}
+            WhatsApp
           </a>
         </div>
         <div className="lg:col-span-7">

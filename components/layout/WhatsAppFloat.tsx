@@ -1,4 +1,3 @@
-import { site } from "@/content/site";
 import { whatsappHref } from "@/lib/whatsapp";
 
 function WhatsAppIcon() {
@@ -18,7 +17,7 @@ export function WhatsAppFloat() {
       href={whatsappHref("Hello, I'd like to talk about a project.")}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={`Chat on WhatsApp ${site.whatsapp.display}`}
+      aria-label="Chat on WhatsApp"
       className="fixed right-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex size-12 items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_24px_rgba(0,0,0,0.35)] transition-transform duration-200 hover:scale-105 sm:right-6 sm:bottom-6 sm:size-14"
     >
       <WhatsAppIcon />

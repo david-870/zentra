@@ -6,22 +6,50 @@ import { navLinks, primaryCta } from "@/content/navigation";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/Button";
 
+function MenuIcon({ open }: { open: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
+      {open ? (
+        <path fill="none" stroke="currentColor" strokeWidth="1.6" d="M5 5l14 14M19 5 5 19" />
+      ) : (
+        <path fill="none" stroke="currentColor" strokeWidth="1.6" d="M4 7h16M4 12h16M4 17h16" />
+      )}
+    </svg>
+  );
+}
+
 export function Header() {
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/90 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-[1120px] items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-8">
-        <Link href="/#top" aria-label="Zentra home" className="min-w-0 shrink text-text" onClick={() => setOpen(false)}>
+      <div className="relative mx-auto flex h-16 max-w-[1120px] items-center justify-end px-4 sm:h-[4.25rem] sm:px-8">
+        <button
+          type="button"
+          className="absolute top-1/2 left-4 z-10 flex size-11 -translate-y-1/2 items-center justify-center sm:left-8 lg:hidden"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <MenuIcon open={open} />
+        </button>
+
+        <Link
+          href="/#top"
+          aria-label="Zentra home"
+          className="absolute top-1/2 left-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-text"
+          onClick={() => setOpen(false)}
+        >
           <Logo className="text-[1.05rem] sm:text-[1.2rem]" />
         </Link>
 
-        <nav aria-label="Primary" className="hidden items-center gap-8 lg:flex">
+        <nav aria-label="Primary" className="hidden max-w-[calc(50%-3rem)] flex-wrap items-center justify-end gap-x-5 gap-y-1 lg:flex">
           {navLinks.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-[0.75rem] tracking-[0.12em] text-muted uppercase transition-colors hover:text-text"
+              className="text-[0.7rem] tracking-[0.12em] text-muted uppercase transition-colors hover:text-text xl:text-[0.75rem]"
             >
               {item.label}
             </Link>
@@ -30,16 +58,6 @@ export function Header() {
             {primaryCta.label}
           </Button>
         </nav>
-
-        <button
-          type="button"
-          className="shrink-0 min-h-11 px-1 text-[0.75rem] tracking-[0.12em] uppercase lg:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? "Close" : "Menu"}
-        </button>
       </div>
 
       {open ? (

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { home } from "@/content/home";
-import { site } from "@/content/site";
 import { whatsappHref } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
 
@@ -26,7 +25,7 @@ export function InquiryForm() {
           rel="noopener noreferrer"
           className="mt-6 inline-flex min-h-11 items-center justify-center border border-line px-5 text-[0.8125rem] font-medium tracking-[0.06em] uppercase"
         >
-          WhatsApp {site.whatsapp.display}
+          WhatsApp
         </a>
       </div>
     );
