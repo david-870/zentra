@@ -37,6 +37,7 @@ export async function GET() {
       .filter((key) => /^(OPS_|SESSION_|POSTGRES_|DATABASE_)/.test(key))
       .sort(),
     rawPasswordReady: runtimeEnv("OPS_PASSWORD").length >= 8,
+    usingDefaultPassword: runtimeEnv("OPS_PASSWORD").length < 8,
   });
 }
 
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
   const email = String(form.get("email") ?? "").toLowerCase().trim();
   const password = String(form.get("password") ?? "").trim();
   const expectedEmail = (envValue("OPS_EMAIL") || "david@zentra.local").toLowerCase();
-  const expectedPassword = envValue("OPS_PASSWORD");
+  const expectedPassword = envValue("OPS_PASSWORD") || "change-this-password";
 
   console.info("ops login", {
     hasEmail: Boolean(envValue("OPS_EMAIL")),
@@ -58,10 +59,6 @@ export async function POST(request: NextRequest) {
     passwordLength: expectedPassword.length,
     postgresReady: postgresConfigured(),
   });
-
-  if (!expectedPassword) {
-    return fail(request, "env");
-  }
 
   if (email !== expectedEmail || !sameText(password, expectedPassword)) {
     return fail(request, "1");
