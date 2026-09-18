@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import { loginAction } from "@/app/ops/actions";
 import { Logo } from "@/components/brand/Logo";
-import { opsPasswordReady } from "@/lib/ops/config";
 import { safeEnsureSeed } from "@/lib/ops/seed";
 
 export default async function LoginPage({
@@ -12,7 +11,6 @@ export default async function LoginPage({
   await connection();
   await safeEnsureSeed();
   const query = await searchParams;
-  const ready = opsPasswordReady();
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-5">
       <Logo className="text-4xl" />
@@ -28,11 +26,6 @@ export default async function LoginPage({
           <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
         </label>
         {query.error ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
-        {ready ? null : (
-          <p className="text-sm text-muted">
-            Set OPS_PASSWORD in Vercel to the same password as your local `.env`, then redeploy.
-          </p>
-        )}
         <button type="submit" className="mt-2 min-h-12 bg-white text-sm tracking-[0.08em] text-black uppercase">
           Enter
         </button>
