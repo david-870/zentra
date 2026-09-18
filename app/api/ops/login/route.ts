@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { postgresConfigured } from "@/lib/ops/enquiry-postgres";
+import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { createOpsSession } from "@/lib/ops/session-store";
 import { rateLimit } from "@/lib/ops/rate-limit";
 
@@ -9,28 +10,8 @@ export const dynamic = "force-dynamic";
 
 const COOKIE = "zentra_ops";
 
-// Keep these member accesses so the host includes the secrets in this function.
-const tracedEmail = process.env.OPS_EMAIL;
-const tracedPassword = process.env.OPS_PASSWORD;
-const tracedSession = process.env.SESSION_SECRET;
-const tracedPostgres = process.env.POSTGRES_URL;
-
-function clean(value?: string) {
-  if (typeof value !== "string") return "";
-  return value.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
-}
-
 function envValue(name: string) {
-  if (name === "OPS_EMAIL" && tracedEmail) return clean(tracedEmail);
-  if (name === "OPS_PASSWORD" && tracedPassword) return clean(tracedPassword);
-  if (name === "SESSION_SECRET" && tracedSession) return clean(tracedSession);
-  if (name === "POSTGRES_URL" && tracedPostgres) return clean(tracedPostgres);
-
-  for (const [key, value] of Object.entries(process.env)) {
-    if (key !== name) continue;
-    return clean(value);
-  }
-  return "";
+  return runtimeEnv(name);
 }
 
 function sameText(left: string, right: string) {
@@ -55,6 +36,7 @@ export async function GET() {
     keys: Object.keys(process.env)
       .filter((key) => /^(OPS_|SESSION_|POSTGRES_|DATABASE_)/.test(key))
       .sort(),
+    rawPasswordReady: runtimeEnv("OPS_PASSWORD").length >= 8,
   });
 }
 
