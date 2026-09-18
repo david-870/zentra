@@ -30,7 +30,12 @@ async function graphSend(payload: Record<string, unknown>) {
 }
 
 export function normalizeWaPhone(value: string) {
-  return value.replace(/\D/g, "");
+  let digits = value.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length === 11) {
+    digits = `234${digits.slice(1)}`;
+  }
+  return digits;
 }
 
 export async function getWhatsAppDisplayPhone() {

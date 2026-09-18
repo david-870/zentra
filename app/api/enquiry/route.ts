@@ -10,6 +10,16 @@ function isPhone(value: string) {
   return value.replace(/\D/g, "").length >= 10;
 }
 
+function includeNotifyEnv() {
+  const found = {
+    OPS_NOTIFY_PHONE: Boolean(String(process.env.OPS_NOTIFY_PHONE ?? "").trim()),
+    WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
+    WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
+    WHATSAPP_NOTIFY_TEMPLATE: Boolean(String(process.env.WHATSAPP_NOTIFY_TEMPLATE ?? "").trim()),
+  };
+  console.info("enquiry notify env", found);
+}
+
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!rateLimit(`enquiry:${ip}`, 8, 10 * 60_000)) {
@@ -44,6 +54,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    includeNotifyEnv();
     await createWebsiteEnquiry({ name, business, need, phone, email, website });
     return NextResponse.json({ ok: true });
   } catch (error) {

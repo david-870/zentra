@@ -37,7 +37,8 @@ export async function GET() {
       .filter((key) => /^(OPS_|SESSION_|POSTGRES_|DATABASE_)/.test(key))
       .sort(),
     rawPasswordReady: runtimeEnv("OPS_PASSWORD").length >= 8,
-    usingDefaultPassword: runtimeEnv("OPS_PASSWORD").length < 8,
+    notifyPhoneReady: runtimeEnv("OPS_NOTIFY_PHONE").replace(/\D/g, "").length >= 10,
+    whatsappReady: Boolean(runtimeEnv("WHATSAPP_ACCESS_TOKEN") && runtimeEnv("WHATSAPP_PHONE_NUMBER_ID")),
   });
 }
 

@@ -1,4 +1,3 @@
-import { site } from "@/content/site";
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 import {
@@ -30,7 +29,7 @@ function contactLine(input: EnquiryInput) {
 }
 
 function notifyPhone() {
-  return opsConfig.ops.notifyPhone || site.whatsapp.e164;
+  return opsConfig.ops.notifyPhone;
 }
 
 async function persistWebsiteEnquiryLead(input: EnquiryInput) {
@@ -74,7 +73,7 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
   }
   const to = normalizeWaPhone(notifyPhone());
   if (!to) {
-    throw new Error("No WhatsApp number to ping. Set OPS_NOTIFY_PHONE in Vercel.");
+    throw new Error("OPS_NOTIFY_PHONE is empty. Open it in Vercel, paste your personal WhatsApp, save, then send a new enquiry.");
   }
 
   const from = await getWhatsAppDisplayPhone();
