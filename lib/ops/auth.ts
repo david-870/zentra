@@ -2,6 +2,7 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { cookies } from "next/headers";
 import { db } from "@/lib/ops/db";
 import { opsConfig } from "@/lib/ops/config";
+import { runtimeEnv } from "@/lib/ops/runtime-env";
 
 const COOKIE = "zentra_ops";
 export const ENV_OPS_USER_ID = "ops-env";
@@ -12,14 +13,8 @@ export type OpsUser = {
   name: string;
 };
 
-function cleanSession() {
-  const value = process.env.SESSION_SECRET;
-  if (typeof value !== "string") return "";
-  return value.trim().replace(/^(['"])(.*)\1$/, "$2").trim();
-}
-
 function secret() {
-  const value = cleanSession();
+  const value = runtimeEnv("SESSION_SECRET");
   if (value.length >= 16) return value;
   const fallback = opsConfig.ops.password;
   if (fallback.length >= 8) {
