@@ -35,6 +35,8 @@ export default async function EnquiriesPage() {
               <p className="mt-2 line-clamp-2 text-sm text-muted">{item.need}</p>
               <p className="mt-2 text-xs text-muted">
                 {formatWhen(item.createdAt)}
+                {item.archivedAt ? " · Archived" : ` · ${item.status.replaceAll("_", " ")}`}
+                {item.emailNotifiedAt ? " · Email sent" : item.emailNotifyError ? " · Email failed" : ""}
                 {item.notifiedAt ? " · WhatsApp sent" : item.notifyError ? " · WhatsApp failed" : ""}
               </p>
             </Link>

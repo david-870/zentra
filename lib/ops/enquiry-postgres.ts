@@ -1,5 +1,8 @@
 import { neon } from "@neondatabase/serverless";
 
+export const ENQUIRY_STATUSES = ["NEW", "QUALIFIED", "FOLLOW_UP", "WON", "LOST"] as const;
+export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
+
 export type WebsiteEnquiry = {
   id: string;
   name: string;
@@ -9,9 +12,15 @@ export type WebsiteEnquiry = {
   phone: string;
   email: string;
   website: string;
+  status: EnquiryStatus;
+  notes: string;
+  followUpAt: Date | null;
+  archivedAt: Date | null;
   createdAt: Date;
   notifiedAt: Date | null;
   notifyError: string | null;
+  emailNotifiedAt: Date | null;
+  emailNotifyError: string | null;
 };
 
 function isPostgresUrl(value?: string) {
@@ -84,6 +93,17 @@ async function ensureEnquiryTable(sql: NonNullable<ReturnType<typeof client>>) {
   await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS website text NOT NULL DEFAULT ''`;
   await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS notified_at timestamptz`;
   await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS notify_error text`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'NEW'`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS notes text NOT NULL DEFAULT ''`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS follow_up_at timestamptz`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS archived_at timestamptz`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS email_notified_at timestamptz`;
+  await sql`ALTER TABLE website_enquiries ADD COLUMN IF NOT EXISTS email_notify_error text`;
+}
+
+function asStatus(value: unknown): EnquiryStatus {
+  const status = String(value ?? "NEW").toUpperCase();
+  return (ENQUIRY_STATUSES as readonly string[]).includes(status) ? (status as EnquiryStatus) : "NEW";
 }
 
 function mapRow(row: Record<string, unknown>): WebsiteEnquiry {
@@ -104,9 +124,15 @@ function mapRow(row: Record<string, unknown>): WebsiteEnquiry {
     phone: parsed.phone,
     email: parsed.email,
     website: parsed.website,
+    status: asStatus(row.status),
+    notes: String(row.notes ?? ""),
+    followUpAt: row.follow_up_at ? new Date(String(row.follow_up_at)) : null,
+    archivedAt: row.archived_at ? new Date(String(row.archived_at)) : null,
     createdAt: new Date(String(row.created_at ?? Date.now())),
     notifiedAt: row.notified_at ? new Date(String(row.notified_at)) : null,
     notifyError: row.notify_error ? String(row.notify_error) : null,
+    emailNotifiedAt: row.email_notified_at ? new Date(String(row.email_notified_at)) : null,
+    emailNotifyError: row.email_notify_error ? String(row.email_notify_error) : null,
   };
 }
 
@@ -152,7 +178,7 @@ export async function listWebsiteEnquiries(limit = 100) {
   try {
     await ensureEnquiryTable(sql);
     const rows = (await sql`
-      SELECT id, name, business, need, contact, phone, email, website, created_at, notified_at, notify_error
+      SELECT id, name, business, need, contact, phone, email, website, status, notes, follow_up_at, archived_at, created_at, notified_at, notify_error, email_notified_at, email_notify_error
       FROM website_enquiries
       ORDER BY created_at DESC
       LIMIT ${limit}
@@ -170,7 +196,7 @@ export async function getWebsiteEnquiry(id: string) {
   try {
     await ensureEnquiryTable(sql);
     const rows = (await sql`
-      SELECT id, name, business, need, contact, phone, email, website, created_at, notified_at, notify_error
+      SELECT id, name, business, need, contact, phone, email, website, status, notes, follow_up_at, archived_at, created_at, notified_at, notify_error, email_notified_at, email_notify_error
       FROM website_enquiries
       WHERE id = ${id}
       LIMIT 1
@@ -203,4 +229,59 @@ export async function markEnquiryNotified(id: string, error?: string) {
   } catch (caught) {
     console.error(caught);
   }
+}
+
+export async function markEnquiryEmailNotified(id: string, error?: string) {
+  const sql = client();
+  if (!sql) return;
+  try {
+    await ensureEnquiryTable(sql);
+    if (error) {
+      await sql`
+        UPDATE website_enquiries
+        SET email_notify_error = ${error.slice(0, 400)}
+        WHERE id = ${id}
+      `;
+      return;
+    }
+    await sql`
+      UPDATE website_enquiries
+      SET email_notified_at = now(), email_notify_error = NULL
+      WHERE id = ${id}
+    `;
+  } catch (caught) {
+    console.error(caught);
+  }
+}
+
+export async function updateWebsiteEnquiry(
+  id: string,
+  input: {
+    status: EnquiryStatus;
+    notes: string;
+    followUpAt: Date | null;
+  },
+) {
+  const sql = client();
+  if (!sql) return;
+  await ensureEnquiryTable(sql);
+  await sql`
+    UPDATE website_enquiries
+    SET
+      status = ${input.status},
+      notes = ${input.notes.slice(0, 4000)},
+      follow_up_at = ${input.followUpAt ? input.followUpAt.toISOString() : null}
+    WHERE id = ${id}
+  `;
+}
+
+export async function setWebsiteEnquiryArchived(id: string, archived: boolean) {
+  const sql = client();
+  if (!sql) return;
+  await ensureEnquiryTable(sql);
+  if (archived) {
+    await sql`UPDATE website_enquiries SET archived_at = now() WHERE id = ${id}`;
+    return;
+  }
+  await sql`UPDATE website_enquiries SET archived_at = NULL WHERE id = ${id}`;
 }

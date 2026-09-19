@@ -4,7 +4,7 @@ import { site } from "@/content/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: `How ${site.name} collects and uses information from the website enquiry form.`,
+  description: `How ${site.name} collects and uses information submitted through the website enquiry form.`,
   robots: { index: true, follow: true },
 };
 
@@ -12,11 +12,11 @@ export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy Policy" updated="Last updated September 2026">
       <p>
-        {site.name} (“we”) uses this website to explain our work and to receive enquiries from businesses that may want
-        to work with us.
+        This Privacy Policy explains how Zentra [REGISTERED BUSINESS NAME] (“Zentra”, “we”, “us” or “our”) collects and
+        uses personal information through this website.
       </p>
       <p>
-        If you send the enquiry form, we collect the information you enter: your name, business name, a short note on
+        If you submit the enquiry form, we collect the information you enter: your name, business name, a short note on
         what you need help with, your phone or WhatsApp number, and your email address. A company website is optional.
         You do not need a website to contact us.
       </p>
@@ -25,15 +25,24 @@ export default function PrivacyPage() {
         do not use it for unrelated marketing lists.
       </p>
       <p>
-        The form is stored so we can follow up. Access is limited to people handling enquiries for {site.name}.
+        Information submitted through the enquiry form is stored so that we can respond to your enquiry and follow up
+        where necessary. Access is limited to authorised people handling enquiries for Zentra.
+      </p>
+      <h2 className="pt-2 text-text">How long information is kept</h2>
+      <p>
+        We keep enquiry information only for as long as reasonably necessary to respond to your request, manage any
+        resulting business relationship, and meet applicable legal or administrative requirements.
       </p>
       <p>
-        If you contact us on WhatsApp instead, that conversation is handled on WhatsApp according to Meta’s terms, and
-        we keep what we need to continue the discussion.
+        If you contact us through WhatsApp, your use of WhatsApp is also subject to WhatsApp’s own privacy practices and
+        terms. Zentra may retain information from the conversation where reasonably necessary to respond to your enquiry
+        or continue a business relationship.
       </p>
+      <h2 className="pt-2 text-text">Privacy enquiries</h2>
+      <p className="text-text">Privacy enquiries: hello@zentra[EMAIL DOMAIN]</p>
       <p>
-        To ask what we hold, or to ask us to update or delete an enquiry, use the contact form on this website or
-        WhatsApp.
+        You can contact us to request access to, correction of, or deletion of personal information you have submitted.
+        You can also use the contact form on this website or WhatsApp.
       </p>
     </LegalPage>
   );

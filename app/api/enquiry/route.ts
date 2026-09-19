@@ -13,6 +13,8 @@ function isPhone(value: string) {
 function includeNotifyEnv() {
   const found = {
     OPS_NOTIFY_PHONE: Boolean(String(process.env.OPS_NOTIFY_PHONE ?? "").trim()),
+    OPS_NOTIFY_EMAIL: Boolean(String(process.env.OPS_NOTIFY_EMAIL ?? "").trim()),
+    RESEND_API_KEY: Boolean(String(process.env.RESEND_API_KEY ?? "").trim()),
     WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
     WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
     WHATSAPP_NOTIFY_TEMPLATE: Boolean(String(process.env.WHATSAPP_NOTIFY_TEMPLATE ?? "").trim()),

@@ -2,7 +2,13 @@ import { runtimeEnv } from "@/lib/ops/runtime-env";
 
 export const opsConfig = {
   get appUrl() {
-    return runtimeEnv("APP_URL") || "http://localhost:3000";
+    return (
+      runtimeEnv("NEXT_PUBLIC_SITE_URL") ||
+      runtimeEnv("APP_URL") ||
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : "http://localhost:3000")
+    );
   },
   get webhookUrl() {
     return runtimeEnv("WEBHOOK_URL") || "http://localhost:3000/api/whatsapp/webhook";
@@ -44,6 +50,17 @@ export const opsConfig = {
     },
     get notifyPhone() {
       return runtimeEnv("OPS_NOTIFY_PHONE");
+    },
+    get notifyEmail() {
+      return runtimeEnv("OPS_NOTIFY_EMAIL").toLowerCase();
+    },
+  },
+  email: {
+    get apiKey() {
+      return runtimeEnv("RESEND_API_KEY");
+    },
+    get from() {
+      return runtimeEnv("RESEND_FROM_EMAIL") || "Zentra Ops <onboarding@resend.dev>";
     },
   },
   get cronSecret() {

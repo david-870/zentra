@@ -1,9 +1,11 @@
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 import {
+  markEnquiryEmailNotified,
   markEnquiryNotified,
   persistWebsiteEnquiryPostgres,
 } from "@/lib/ops/enquiry-postgres";
+import { sendOpsEmail } from "@/lib/ops/email";
 import { notify } from "@/lib/ops/notify";
 import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { ensureSeed } from "@/lib/ops/seed";
@@ -118,7 +120,35 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
   return true;
 }
 
+async function notifyOwnerEmail(input: EnquiryInput, enquiryId: string | null) {
+  const origin = opsConfig.appUrl.replace(/\/$/, "");
+  const view = enquiryId ? `${origin}/ops/enquiries/${enquiryId}` : `${origin}/ops/enquiries`;
+  const text = [
+    "NEW ZENTRA ENQUIRY",
+    "",
+    `Name: ${input.name}`,
+    `Business: ${input.business}`,
+    `Email: ${input.email}`,
+    `WhatsApp: ${input.phone}`,
+    `Website: ${input.website || "none"}`,
+    `Need: ${input.need}`,
+    "",
+    `View enquiry: ${view}`,
+  ].join("\n");
+  await sendOpsEmail("NEW ZENTRA ENQUIRY", text);
+}
+
 async function recordNotify(neonId: string | null, input: EnquiryInput) {
+  try {
+    await notifyOwnerEmail(input, neonId);
+    if (neonId) await markEnquiryEmailNotified(neonId);
+  } catch (error) {
+    console.error(error);
+    if (neonId) {
+      await markEnquiryEmailNotified(neonId, error instanceof Error ? error.message : "Email notify failed");
+    }
+  }
+
   try {
     await notifyOwnerWhatsApp(input);
     if (neonId) await markEnquiryNotified(neonId);
@@ -165,7 +195,7 @@ export async function createWebsiteEnquiry(input: EnquiryInput) {
   }
 
   try {
-    await notifyOwnerWhatsApp(input);
+    await recordNotify(null, input);
     return { id: "notified" };
   } catch (error) {
     errors.push(error);

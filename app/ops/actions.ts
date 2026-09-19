@@ -7,19 +7,21 @@ import { connection } from "next/server";
 import { createSession, destroySession, envOpsUser, requireUser, sameText, verifyPassword } from "@/lib/ops/auth";
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
+import { ENQUIRY_STATUSES, setWebsiteEnquiryArchived, updateWebsiteEnquiry } from "@/lib/ops/enquiry-postgres";
 import { runDueFollowUps } from "@/lib/ops/followups";
 import { notify } from "@/lib/ops/notify";
 import { sendWhatsAppText } from "@/lib/ops/whatsapp";
 import { processCustomerText } from "@/lib/ops/engine";
 import { ensureSeed, safeEnsureSeed } from "@/lib/ops/seed";
 
-function refreshOps(leadId?: string) {
+function refreshOps(leadId?: string, enquiryId?: string) {
   revalidatePath("/ops");
   revalidatePath("/ops/enquiries");
   revalidatePath("/ops/leads");
   revalidatePath("/ops/analytics");
   revalidatePath("/ops/knowledge");
   if (leadId) revalidatePath(`/ops/leads/${leadId}`);
+  if (enquiryId) revalidatePath(`/ops/enquiries/${enquiryId}`);
 }
 
 export async function loginAction(formData: FormData) {
@@ -216,4 +218,30 @@ export async function updateKnowledge(formData: FormData) {
   if (!id) return;
   await db.knowledgeBaseItem.update({ where: { id }, data: { body } });
   refreshOps();
+}
+
+export async function updateWebsiteEnquiryAction(formData: FormData) {
+  const user = await requireUser();
+  if (!user) redirect("/ops/login");
+  const id = String(formData.get("id") ?? "");
+  const status = String(formData.get("status") ?? "NEW");
+  const notes = String(formData.get("notes") ?? "").trim();
+  const followUp = String(formData.get("followUpAt") ?? "").trim();
+  if (!id) return;
+  await updateWebsiteEnquiry(id, {
+    status: (ENQUIRY_STATUSES as readonly string[]).includes(status) ? (status as (typeof ENQUIRY_STATUSES)[number]) : "NEW",
+    notes,
+    followUpAt: followUp ? new Date(`${followUp}T09:00:00.000Z`) : null,
+  });
+  refreshOps(undefined, id);
+}
+
+export async function archiveWebsiteEnquiryAction(formData: FormData) {
+  const user = await requireUser();
+  if (!user) redirect("/ops/login");
+  const id = String(formData.get("id") ?? "");
+  const archived = String(formData.get("archived") ?? "") === "1";
+  if (!id) return;
+  await setWebsiteEnquiryArchived(id, archived);
+  refreshOps(undefined, id);
 }
