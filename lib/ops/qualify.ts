@@ -35,6 +35,12 @@ const HANDOFF_PHRASES = [
   "question for your team",
 ];
 
+export function isGreeting(text: string) {
+  return /^(hi+|hii+|hello|hey+|yo|start(?: over)?|menu|restart|good (?:morning|afternoon|evening))\b/i.test(
+    text.trim(),
+  );
+}
+
 export function wantsHandoff(text: string) {
   const value = text.toLowerCase().trim();
   if (/^7\b/.test(value)) return true;

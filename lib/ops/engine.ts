@@ -18,6 +18,7 @@ import {
   detectBudget,
   detectNeed,
   firstName,
+  isGreeting,
   LeadContext,
   packageLabel,
   recommendPackage,
@@ -115,6 +116,12 @@ export async function processCustomerText(input: {
   const ctx = readContext(conversation.contextJson);
   if (!ctx.source) ctx.source = "whatsapp";
   if (input.profileName && !ctx.name) ctx.name = input.profileName;
+
+  if (isGreeting(input.text)) {
+    await saveConversation(conversation.id, { control: "AI", stage: "welcome" });
+    conversation.control = "AI";
+    conversation.stage = "welcome";
+  }
 
   const lead = await writeLead(
     contactId,
