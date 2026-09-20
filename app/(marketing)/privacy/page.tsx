@@ -38,6 +38,10 @@ export default function PrivacyPage() {
         terms. Zentra may retain information from the conversation where reasonably necessary to respond to your enquiry
         or continue a business relationship.
       </p>
+      <p>
+        This website uses Google Analytics to understand how the public pages are used, such as which pages are visited.
+        This may include a shortened IP address and basic device information. We do not use it to sell your data.
+      </p>
       <h2 className="pt-2 text-text">Privacy enquiries</h2>
       <p className="text-text">Privacy enquiries: hello@zentra[EMAIL DOMAIN]</p>
       <p>
