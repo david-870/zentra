@@ -85,7 +85,7 @@ export async function sendWhatsAppList(
   rows: { id: string; title: string; description?: string }[],
 ) {
   return graphSend({
-    to,
+    to: normalizeWaPhone(to),
     type: "interactive",
     interactive: {
       type: "list",

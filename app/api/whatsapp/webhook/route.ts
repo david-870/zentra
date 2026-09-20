@@ -1,13 +1,25 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { claimEvent, chatStoreReady, releaseEvent } from "@/lib/ops/chat-store";
 import { opsConfig } from "@/lib/ops/config";
-import { db } from "@/lib/ops/db";
 import { processCustomerText } from "@/lib/ops/engine";
 import { rateLimit } from "@/lib/ops/rate-limit";
-import { ensureSeed } from "@/lib/ops/seed";
 import { parseIncoming } from "@/lib/ops/whatsapp";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+function includeWebhookEnv() {
+  return {
+    WHATSAPP_VERIFY_TOKEN: Boolean(String(process.env.WHATSAPP_VERIFY_TOKEN ?? "").trim()),
+    WHATSAPP_APP_SECRET: Boolean(String(process.env.WHATSAPP_APP_SECRET ?? "").trim()),
+    WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
+    WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
+  };
+}
+
 export async function GET(request: NextRequest) {
+  includeWebhookEnv();
   const mode = request.nextUrl.searchParams.get("hub.mode");
   const token = request.nextUrl.searchParams.get("hub.verify_token");
   const challenge = request.nextUrl.searchParams.get("hub.challenge");
@@ -31,6 +43,7 @@ function validSignature(request: NextRequest, raw: string) {
 }
 
 export async function POST(request: NextRequest) {
+  includeWebhookEnv();
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!rateLimit(`wa:${ip}`, 120, 60_000)) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
@@ -49,23 +62,21 @@ export async function POST(request: NextRequest) {
   }
 
   const incoming = parseIncoming(payload);
-  console.info("WhatsApp webhook POST", {
-    parsed: Boolean(incoming),
-    from: incoming?.from,
-    textPreview: incoming?.text?.slice(0, 40),
-  });
   if (!incoming) {
     return NextResponse.json({ ok: true, ignored: true });
   }
 
-  try {
-    await db.processedEvent.create({ data: { id: incoming.id } });
-  } catch {
+  if (!chatStoreReady()) {
+    console.error("WhatsApp webhook: Postgres is not configured");
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
+
+  const claimed = await claimEvent(incoming.id);
+  if (!claimed) {
     return NextResponse.json({ ok: true, duplicate: true });
   }
 
   try {
-    await ensureSeed();
     await processCustomerText({
       waId: incoming.from,
       phone: incoming.from,
@@ -75,7 +86,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(error);
-    await db.processedEvent.delete({ where: { id: incoming.id } }).catch(() => undefined);
+    await releaseEvent(incoming.id).catch(() => undefined);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 
