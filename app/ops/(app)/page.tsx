@@ -3,7 +3,7 @@ import { db } from "@/lib/ops/db";
 import { runFollowUpsAction, simulateInbound } from "@/app/ops/actions";
 import { listChatLeads } from "@/lib/ops/chat-store";
 import { listWebsiteEnquiries, postgresConfigured } from "@/lib/ops/enquiry-postgres";
-import { whatsappConfigured } from "@/lib/ops/whatsapp";
+import { getWhatsAppDisplayPhone, whatsappConfigured } from "@/lib/ops/whatsapp";
 
 function formatWhen(value: Date) {
   return new Intl.DateTimeFormat("en-GB", {
@@ -16,6 +16,8 @@ export default async function OpsHome() {
   const enquiries = await listWebsiteEnquiries(8);
   const chatLeads = await listChatLeads();
   const whatsapp = whatsappConfigured();
+  const fromNumber = whatsapp ? await getWhatsAppDisplayPhone() : "";
+  const whatsappLive = Boolean(fromNumber);
 
   let total = 0;
   let fresh = 0;
@@ -54,7 +56,11 @@ export default async function OpsHome() {
         <h1 className="font-display text-4xl">Overview</h1>
         <p className="mt-2 text-sm text-muted">
           {postgresConfigured() ? "Website enquiries are being saved." : "Website enquiry storage is not connected."}{" "}
-          {whatsapp ? "A WhatsApp ping is sent when a form arrives." : "WhatsApp ping is off until Cloud API keys are set in Vercel."}
+          {whatsappLive
+            ? "A WhatsApp ping is sent when a form arrives."
+            : whatsapp
+              ? "WhatsApp token is expired. Pings and auto-replies will not send until you paste a System User token in Vercel."
+              : "WhatsApp ping is off until Cloud API keys are set in Vercel."}
         </p>
       </div>
 

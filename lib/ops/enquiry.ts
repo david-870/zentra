@@ -7,15 +7,8 @@ import {
 } from "@/lib/ops/enquiry-postgres";
 import { sendOpsEmail } from "@/lib/ops/email";
 import { notify } from "@/lib/ops/notify";
-import { runtimeEnv } from "@/lib/ops/runtime-env";
 import { ensureSeed } from "@/lib/ops/seed";
-import {
-  getWhatsAppDisplayPhone,
-  normalizeWaPhone,
-  sendWhatsAppTemplate,
-  sendWhatsAppText,
-  whatsappConfigured,
-} from "@/lib/ops/whatsapp";
+import { sendOwnerPing } from "@/lib/ops/whatsapp";
 
 type EnquiryInput = {
   name: string;
@@ -28,10 +21,6 @@ type EnquiryInput = {
 
 function contactLine(input: EnquiryInput) {
   return [input.phone, input.email, input.website].filter(Boolean).join(" · ");
-}
-
-function notifyPhone() {
-  return opsConfig.ops.notifyPhone;
 }
 
 async function persistWebsiteEnquiryLead(input: EnquiryInput) {
@@ -70,21 +59,6 @@ async function persistWebsiteEnquiryLead(input: EnquiryInput) {
 }
 
 async function notifyOwnerWhatsApp(input: EnquiryInput) {
-  if (!whatsappConfigured()) {
-    throw new Error("WhatsApp Cloud API token is not available to this deployment.");
-  }
-  const to = normalizeWaPhone(notifyPhone());
-  if (!to) {
-    throw new Error("OPS_NOTIFY_PHONE is empty. Open it in Vercel, paste your personal WhatsApp, save, then send a new enquiry.");
-  }
-
-  const from = await getWhatsAppDisplayPhone();
-  if (from && (from === to || from.endsWith(to) || to.endsWith(from))) {
-    throw new Error(
-      "Cloud API cannot message the same WhatsApp number it sends from. Set OPS_NOTIFY_PHONE to your personal WhatsApp.",
-    );
-  }
-
   const body = [
     "NEW ZENTRA ENQUIRY",
     `Name: ${input.name}`,
@@ -94,29 +68,12 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
     `Email: ${input.email}`,
     input.website ? `Website: ${input.website}` : "Website: none",
   ].join("\n");
-
-  const tail = `ending ${to.slice(-4)}`;
-
   try {
-    await sendWhatsAppText(to, body);
-    return true;
-  } catch (textError) {
-    const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
-    const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
-    try {
-      await sendWhatsAppTemplate(
-        to,
-        template,
-        language,
-        template === "hello_world"
-          ? []
-          : [input.name, input.business, input.need, input.phone, input.email],
-      );
-      return true;
-    } catch {
-      const detail = textError instanceof Error ? textError.message : "WhatsApp send failed";
-      throw new Error(`${detail} (pinged number ${tail})`);
-    }
+    await sendOwnerPing(body);
+  } catch (error) {
+    const tail = opsConfig.ops.notifyPhone.replace(/\D/g, "").slice(-4);
+    const detail = error instanceof Error ? error.message : "WhatsApp send failed";
+    throw new Error(`${detail} (pinged number ending ${tail || "????"})`);
   }
 }
 

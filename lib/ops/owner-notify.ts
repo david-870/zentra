@@ -1,6 +1,5 @@
-import { opsConfig } from "@/lib/ops/config";
 import { sendOpsEmail } from "@/lib/ops/email";
-import { normalizeWaPhone, sendWhatsAppText } from "@/lib/ops/whatsapp";
+import { sendOwnerPing } from "@/lib/ops/whatsapp";
 
 export async function notifyOwner(title: string, body: string) {
   try {
@@ -9,10 +8,8 @@ export async function notifyOwner(title: string, body: string) {
     console.error(error);
   }
 
-  const to = normalizeWaPhone(opsConfig.ops.notifyPhone);
-  if (!to) return;
   try {
-    await sendWhatsAppText(to, body.slice(0, 3500));
+    await sendOwnerPing(`${title}\n${body}`.slice(0, 3500));
   } catch (error) {
     console.error(error);
   }

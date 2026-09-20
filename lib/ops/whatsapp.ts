@@ -1,4 +1,5 @@
 import { opsConfig } from "@/lib/ops/config";
+import { runtimeEnv } from "@/lib/ops/runtime-env";
 
 const GRAPH = "https://graph.facebook.com/v21.0";
 
@@ -51,6 +52,37 @@ export async function getWhatsAppDisplayPhone() {
 
 export async function sendWhatsAppText(to: string, body: string) {
   return graphSend({ to: normalizeWaPhone(to), type: "text", text: { body, preview_url: false } });
+}
+
+export async function sendOwnerPing(body: string) {
+  if (!whatsappConfigured()) {
+    throw new Error("WhatsApp Cloud API token is not available to this deployment.");
+  }
+  const to = normalizeWaPhone(opsConfig.ops.notifyPhone);
+  if (!to) {
+    throw new Error("OPS_NOTIFY_PHONE is empty. Set it to your personal WhatsApp.");
+  }
+
+  const from = await getWhatsAppDisplayPhone();
+  if (from && (from === to || from.endsWith(to) || to.endsWith(from))) {
+    throw new Error(
+      "Cloud API cannot message the same WhatsApp number it sends from. Set OPS_NOTIFY_PHONE to your personal WhatsApp.",
+    );
+  }
+
+  try {
+    await sendWhatsAppText(to, body);
+    return "text" as const;
+  } catch (textError) {
+    const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
+    const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
+    try {
+      await sendWhatsAppTemplate(to, template, language, []);
+      return "template" as const;
+    } catch {
+      throw textError;
+    }
+  }
 }
 
 function templateText(value: string) {
