@@ -86,7 +86,7 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
   }
 
   const body = [
-    "New website enquiry",
+    "NEW ZENTRA ENQUIRY",
     `Name: ${input.name}`,
     `Business: ${input.business}`,
     `Need: ${input.need}`,
@@ -96,28 +96,28 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
   ].join("\n");
 
   const tail = `ending ${to.slice(-4)}`;
-  const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
-  const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
-
-  try {
-    await sendWhatsAppTemplate(to, template, language, template === "hello_world" ? [] : [
-      input.name,
-      input.business,
-      input.need,
-      input.phone,
-      input.email,
-    ]);
-  } catch (error) {
-    const detail = error instanceof Error ? error.message : "WhatsApp template failed";
-    throw new Error(`${detail} (pinged number ${tail})`);
-  }
 
   try {
     await sendWhatsAppText(to, body);
-  } catch {
-    // Template already arrived. Text needs a reply in the 24h window.
+    return true;
+  } catch (textError) {
+    const template = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE") || "hello_world";
+    const language = runtimeEnv("WHATSAPP_NOTIFY_TEMPLATE_LANG") || "en_US";
+    try {
+      await sendWhatsAppTemplate(
+        to,
+        template,
+        language,
+        template === "hello_world"
+          ? []
+          : [input.name, input.business, input.need, input.phone, input.email],
+      );
+      return true;
+    } catch {
+      const detail = textError instanceof Error ? textError.message : "WhatsApp send failed";
+      throw new Error(`${detail} (pinged number ${tail})`);
+    }
   }
-  return true;
 }
 
 async function notifyOwnerEmail(input: EnquiryInput, enquiryId: string | null) {
