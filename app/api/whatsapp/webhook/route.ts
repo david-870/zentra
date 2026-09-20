@@ -21,11 +21,17 @@ function includeWebhookEnv() {
 export async function GET(request: NextRequest) {
   includeWebhookEnv();
   const mode = request.nextUrl.searchParams.get("hub.mode");
-  const token = request.nextUrl.searchParams.get("hub.verify_token");
+  const token = request.nextUrl.searchParams.get("hub.verify_token")?.trim() ?? "";
   const challenge = request.nextUrl.searchParams.get("hub.challenge");
+  const expected = (
+    opsConfig.whatsapp.verifyToken || String(process.env.WHATSAPP_VERIFY_TOKEN ?? "")
+  ).trim();
 
-  if (mode === "subscribe" && token && token === opsConfig.whatsapp.verifyToken && challenge) {
-    return new NextResponse(challenge, { status: 200 });
+  if (mode === "subscribe" && challenge && expected && token === expected) {
+    return new NextResponse(challenge, {
+      status: 200,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+    });
   }
   return NextResponse.json({ error: "Invalid verification" }, { status: 403 });
 }
