@@ -43,9 +43,9 @@ export const metadata: Metadata = {
     description: site.description,
   },
   robots: { index: true, follow: true },
-  verification: process.env.GOOGLE_SITE_VERIFICATION
-    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
-    : undefined,
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || "z5LWcnw5Qg4zG6vz7hqCifcM-9Vpyjy29zF5soxcilI",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
