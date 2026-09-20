@@ -15,6 +15,7 @@ function includeWebhookEnv() {
     WHATSAPP_APP_SECRET: Boolean(String(process.env.WHATSAPP_APP_SECRET ?? "").trim()),
     WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
     WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
+    AI_API_KEY: Boolean(String(process.env.AI_API_KEY ?? "").trim()),
   };
 }
 

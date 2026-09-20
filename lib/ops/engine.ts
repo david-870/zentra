@@ -1,10 +1,10 @@
 import { completeChat } from "@/lib/ops/ai";
 import {
   answerClient,
-  isConversational,
   isNumberedChoice,
   looksLikePersonName,
   SYSTEM_PROMPT,
+  wantsSmartReply,
 } from "@/lib/ops/assistant";
 import {
   addMessage,
@@ -181,7 +181,7 @@ async function runStage(
     return { stopped: true };
   }
 
-  if (isConversational(text) && !isNumberedChoice(text)) {
+  if (wantsSmartReply(text) && !isNumberedChoice(text)) {
     const history = await listRecentMessages(conversation.id);
     const answer = await answerClient({
       text,

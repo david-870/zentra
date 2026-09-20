@@ -2,8 +2,14 @@ import { opsConfig } from "@/lib/ops/config";
 
 type ChatTurn = { role: "system" | "user" | "assistant"; content: string };
 
+function includeAiEnv() {
+  return String(process.env.AI_API_KEY ?? "").trim();
+}
+
 export async function completeChat(messages: ChatTurn[]) {
-  const { apiKey, baseUrl, model } = opsConfig.ai;
+  const apiKey = includeAiEnv() || opsConfig.ai.apiKey;
+  const baseUrl = opsConfig.ai.baseUrl;
+  const model = opsConfig.ai.model;
   if (!apiKey) return null;
 
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
@@ -14,8 +20,8 @@ export async function completeChat(messages: ChatTurn[]) {
     },
     body: JSON.stringify({
       model,
-      temperature: 0.65,
-      max_tokens: 500,
+      temperature: 0.7,
+      max_tokens: 700,
       messages,
     }),
   });
