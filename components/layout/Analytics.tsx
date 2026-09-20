@@ -13,8 +13,8 @@ declare global {
 function clientId() {
   const key = "zentra_cid";
   const existing = window.localStorage.getItem(key);
-  if (existing) return existing;
-  const id = crypto.randomUUID();
+  if (existing && /^\d+\.\d+$/.test(existing)) return existing;
+  const id = `${Math.floor(Math.random() * 1_000_000_0000)}.${Math.floor(Date.now() / 1000)}`;
   window.localStorage.setItem(key, id);
   return id;
 }
@@ -41,12 +41,10 @@ function sendPageView(path: string) {
     dt: document.title,
     _s: "1",
   });
-  const url = `/api/ga/collect?${params.toString()}`;
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(url);
-    return;
-  }
-  void fetch(url, { method: "POST", keepalive: true });
+
+  const firstParty = `/api/ga/collect?${params.toString()}`;
+  const img = new Image();
+  img.src = firstParty;
 }
 
 export function Analytics() {
@@ -54,7 +52,12 @@ export function Analytics() {
 
   useEffect(() => {
     if (!GA_ID || !pathname || pathname.startsWith("/ops")) return;
-    window.gtag?.("event", "page_view", { page_path: pathname });
+    window.gtag?.("consent", "update", { analytics_storage: "granted" });
+    window.gtag?.("event", "page_view", {
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: pathname,
+    });
     sendPageView(pathname);
   }, [pathname]);
 

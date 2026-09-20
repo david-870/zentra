@@ -9,15 +9,20 @@ async function forward(request: NextRequest) {
     collect.searchParams.set(key, value);
   });
 
-  await fetch(collect, {
-    method: "POST",
+  await fetch(collect.toString(), {
+    method: "GET",
     headers: {
-      "User-Agent": request.headers.get("user-agent") || "Zentra",
+      "User-Agent": request.headers.get("user-agent") || "Mozilla/5.0",
+      Accept: "image/gif,image/*,*/*",
     },
     cache: "no-store",
+    redirect: "follow",
   }).catch(() => undefined);
 
-  return new NextResponse(null, { status: 204 });
+  return new NextResponse(null, {
+    status: 204,
+    headers: { "Cache-Control": "no-store" },
+  });
 }
 
 export async function GET(request: NextRequest) {

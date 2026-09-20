@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Syne } from "next/font/google";
 import { site } from "@/content/site";
-import { GA_ID } from "@/lib/analytics";
+import { GA_ID, googleTagSnippet } from "@/lib/analytics";
 import "./globals.css";
 
 const body = Inter({
@@ -54,11 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" data-scroll-behavior="smooth" className={`${body.variable} ${display.variable}`}>
       <head>
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{anonymize_ip:true});`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: googleTagSnippet }} />
       </head>
       <body className="min-h-dvh bg-bg font-sans text-text antialiased">{children}</body>
     </html>
