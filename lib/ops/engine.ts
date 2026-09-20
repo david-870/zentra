@@ -17,7 +17,9 @@ import {
   extraQuestion,
   detectBudget,
   detectNeed,
+  firstName,
   LeadContext,
+  packageLabel,
   recommendPackage,
   recommendationCopy,
   scoreLead,
@@ -84,7 +86,7 @@ async function handoff(conversation: ChatConversation, lead: { id: string; score
   await reply(
     conversation.id,
     to,
-    "I don't want to guess here. I'll connect you with someone from the Zentra team — they'll continue on this chat.",
+    "Of course. I'll get someone from the team on this chat now — they'll pick it up from here.",
   );
 }
 
@@ -160,7 +162,7 @@ async function runStage(
   if (/stop follow|unsubscribe|stop messages/.test(text.toLowerCase())) {
     const lead = await getLeadByConversation(conversation.id);
     if (lead) await cancelFollowUps(lead.id);
-    await reply(conversation.id, phone, "Understood — I won't send automated follow-ups.");
+    await reply(conversation.id, phone, "Got it — I won't send any more follow-ups.");
     return { stopped: true };
   }
 
@@ -174,7 +176,7 @@ async function runStage(
       await reply(
         conversation.id,
         phone,
-        `Thanks for looking at ${ctx.packageInterest}. I'll ask a few short questions so the team has context.\n\nWhat's your name?`,
+        `Thanks for taking a look at ${packageLabel(ctx.packageInterest)}. I'll ask a few quick questions so we point you the right way.\n\nWhat should I call you?`,
       );
       await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
       return { stage };
@@ -192,20 +194,20 @@ async function runStage(
       Object.assign(ctx, detected);
       await saveContext(conversation.id, ctx, "name");
       await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-      await reply(conversation.id, phone, "What's your name?");
+      await reply(conversation.id, phone, "Great — I can help with that. What should I call you?");
       return { stage: "name" };
     }
     await reply(conversation.id, phone, WELCOME);
     if (whatsappConfigured()) {
       try {
-        await sendWhatsAppList(phone, "Choose an option, or just tell me what you need.", "Choose", [
+        await sendWhatsAppList(phone, "Tap one, or just type it in your own words.", "Choose", [
           { id: "website", title: "Website / Web App" },
           { id: "automation", title: "AI & Automation" },
           { id: "crm", title: "CRM / Customers" },
           { id: "software", title: "Custom Software" },
           { id: "marketing", title: "Marketing" },
-          { id: "packages", title: "View packages" },
-          { id: "human", title: "Talk to a human" },
+          { id: "packages", title: "See packages" },
+          { id: "human", title: "Talk to someone" },
         ]);
       } catch (error) {
         console.error(error);
@@ -227,19 +229,19 @@ async function runStage(
       await reply(
         conversation.id,
         phone,
-        "Starter — from ₦250,000 — foundation website and WhatsApp.\nGrowth — from ₦650,000 — website, AI, CRM and automation.\nScale — from ₦1,500,000 — custom systems for established businesses.\n\nWhich of those is closest, or tell me the problem you're solving.",
+        "Here's a simple way to think about it:\n\n*Starter* — from ₦250,000 — a proper website and WhatsApp.\n*Growth* — from ₦650,000 — website, enquiries, CRM and less manual work.\n*Scale* — from ₦1,500,000 — custom systems for how you already work.\n\nWhich feels closest? Or just tell me the problem you're trying to fix.",
       );
       return { stage };
     }
     if (!detected?.serviceInterest && !detected?.packageInterest) {
-      await reply(conversation.id, phone, "Got it. Is this mainly a website, automation, CRM, custom software, or marketing?");
+      await reply(conversation.id, phone, "No worries. Is it more of a website, automation, a customer system, custom software, or marketing?");
       return { stage };
     }
     Object.assign(ctx, detected);
     stage = "name";
     await saveContext(conversation.id, ctx, stage);
     await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-    await reply(conversation.id, phone, "What's your name?");
+    await reply(conversation.id, phone, "Lovely. What should I call you?");
     return { stage };
   }
 
@@ -248,7 +250,13 @@ async function runStage(
     stage = "business";
     await saveContext(conversation.id, ctx, stage);
     await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-    await reply(conversation.id, phone, `Nice to meet you, ${ctx.name}. What's your business called?`);
+    await reply(
+      conversation.id,
+      phone,
+      firstName(ctx.name)
+        ? `Nice to meet you, ${firstName(ctx.name)}. What's the business called?`
+        : "What's the business called?",
+    );
     return { stage };
   }
 
@@ -257,7 +265,7 @@ async function runStage(
     stage = "does";
     await saveContext(conversation.id, ctx, stage);
     await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-    await reply(conversation.id, phone, "What does your business do?");
+    await reply(conversation.id, phone, "And what do you do there? A sentence is plenty.");
     return { stage };
   }
 
@@ -266,7 +274,7 @@ async function runStage(
     stage = "problem";
     await saveContext(conversation.id, ctx, stage);
     await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-    await reply(conversation.id, phone, "What's the biggest problem you're trying to solve right now?");
+    await reply(conversation.id, phone, "What's slowing you down most right now?");
     return { stage };
   }
 
@@ -286,7 +294,7 @@ async function runStage(
     await reply(
       conversation.id,
       phone,
-      "Do you already have a budget range in mind for the project?\n\n1. ₦100k–₦300k\n2. ₦300k–₦700k\n3. ₦700k–₦1.5m\n4. ₦1.5m+\n5. Not sure yet",
+      "No stress if you're not sure yet — roughly, what range are you thinking?\n\n1. ₦100k–₦300k\n2. ₦300k–₦700k\n3. ₦700k–₦1.5m\n4. ₦1.5m+\n5. Not sure yet",
     );
     return { stage };
   }
@@ -312,7 +320,7 @@ async function runStage(
     await reply(
       conversation.id,
       phone,
-      `${recommendationCopy(ctx.packageInterest)}\n\nWould you like to:\n\n1. Start a project\n2. Speak with the Zentra team\n3. See what's included`,
+      `${recommendationCopy(ctx.packageInterest)}\n\nWhat would you like to do next?\n\n1. Start a project\n2. Talk to the team\n3. See what's included`,
     );
     return { stage };
   }
@@ -329,7 +337,7 @@ async function runStage(
       await reply(
         conversation.id,
         phone,
-        `${ctx.packageInterest ?? "Growth"} includes:\n${features.split("; ").map((item) => `• ${item}`).join("\n")}`,
+        `${packageLabel(ctx.packageInterest) || "Growth"} includes:\n${features.split("; ").map((item) => `• ${item}`).join("\n")}\n\nWant to start a project, or talk it through with the team?`,
       );
       return { stage };
     }
@@ -343,7 +351,7 @@ async function runStage(
     await reply(
       conversation.id,
       phone,
-      "Great. A person from the Zentra team will continue from here and confirm the right next step.",
+      "Lovely. Someone from the team will continue here and talk through the next step with you.",
     );
     await notifyOwner(
       "ZENTRA WHATSAPP — READY TO START",
@@ -357,7 +365,7 @@ async function runStage(
       {
         role: "system",
         content:
-          "You are Zentra's WhatsApp assistant. Short messages. Never invent prices, timelines, discounts, clients or results. If unsure, offer to connect a human. Packages: Starter ₦250,000, Growth ₦650,000, Scale from ₦1,500,000.",
+          "You are a helpful person on Zentra's WhatsApp. Sound warm, clear, and human — like a colleague, not a brochure or a form. Keep replies short. One question at a time. Never invent prices, timelines, discounts, clients or results. If unsure, offer to get someone from the team. Packages: Starter ₦250,000, Growth ₦650,000, Scale from ₦1,500,000.",
       },
       { role: "user", content: text },
     ]);
@@ -374,7 +382,7 @@ async function runStage(
   await reply(
     conversation.id,
     phone,
-    "I don't have that information available right now. I can connect you with someone from the Zentra team.",
+    "I'm not sure on that one. Want me to get someone from the team to jump in?",
   );
   return { unknown: true };
 }

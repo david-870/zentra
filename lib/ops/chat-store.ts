@@ -286,9 +286,9 @@ export async function scheduleFollowUps(leadId: string, name: string) {
   if (existing[0]?.id) return;
   const now = Date.now();
   const templates = [
-    { days: 1, text: `Hi ${name}, just checking in about the project we discussed. Do you have any questions I can help with?` },
-    { days: 3, text: `Hi ${name}, would you like us to put together a simple direction for how we'd approach your project?` },
-    { days: 7, text: `Hi ${name}, just checking in one last time. If you're still exploring the project, we're happy to help.` },
+    { days: 1, text: `Hi ${name} — just checking in. Any questions on what we talked about?` },
+    { days: 3, text: `Hi ${name}, would a simple outline of how we'd approach this be useful?` },
+    { days: 7, text: `Hi ${name}, last note from me — if you're still thinking it through, I'm here.` },
   ];
   for (const item of templates) {
     await client`

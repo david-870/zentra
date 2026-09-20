@@ -11,10 +11,10 @@ export type LeadContext = {
 };
 
 export const WELCOME = [
-  "Hi 👋 Welcome to Zentra.",
-  "We help businesses build better digital systems, automate repetitive work and grow through technology.",
-  "What can we help you with?",
-  "1. Website / Web Application\n2. AI & Automation\n3. CRM / Customer Systems\n4. Custom Software\n5. Marketing & Growth\n6. View Zentra Packages\n7. Talk to a Human",
+  "Hi 👋 Thanks for messaging Zentra.",
+  "We help businesses get found, keep up with customers, and take repetitive work off the team.",
+  "What can I help with today? Tap one, or just tell me in your own words.",
+  "1. Website / web app\n2. Automation\n3. CRM / customers\n4. Custom software\n5. Marketing\n6. See packages\n7. Talk to someone",
 ].join("\n\n");
 
 const HANDOFF_PHRASES = [
@@ -108,17 +108,17 @@ export function recommendPackage(ctx: LeadContext) {
 export function extraQuestion(service?: string) {
   switch (service) {
     case "website":
-      return "Do you already have a website, or would this be built from scratch?";
+      return "Do you already have a site, or would this be a fresh one?";
     case "automation":
-      return "Which parts of your business currently require the most manual work?";
+      return "What still has to be done by hand every day?";
     case "crm":
-      return "How are you currently managing your customers and leads?";
+      return "How do you keep track of customers and leads today?";
     case "software":
-      return "What process or system are you trying to build?";
+      return "What would this software actually do for the team?";
     case "marketing":
-      return "Where do most of your customers currently come from?";
+      return "Where do most of your customers find you now?";
     default:
-      return "Is there anything else we should know about how you work today?";
+      return "Anything else I should know about how things work today?";
   }
 }
 
@@ -135,6 +135,17 @@ export function scoreLead(ctx: LeadContext, engaged: boolean) {
   return Math.min(100, score);
 }
 
+export function firstName(name?: string) {
+  return (name ?? "").trim().split(/\s+/)[0] || "";
+}
+
+export function packageLabel(id?: string) {
+  if (id === "starter") return "Starter";
+  if (id === "scale") return "Scale";
+  if (id === "growth") return "Growth";
+  return id ?? "";
+}
+
 export function scoreLabel(score: number) {
   if (score >= 61) return "High";
   if (score >= 31) return "Medium";
@@ -143,10 +154,10 @@ export function scoreLabel(score: number) {
 
 export function recommendationCopy(id: string) {
   if (id === "starter") {
-    return "Based on what you've told me, the *Starter package* sounds closest to what your business needs.\n\nIt covers a professional site, lead capture, WhatsApp and basic automation.\n\n*Starting from ₦250,000.*";
+    return "From what you've said, *Starter* feels like the right place to begin.\n\nThat's a professional site, a simple way for people to reach you, WhatsApp on the site, and a form so enquiries don't get lost.\n\n*From ₦250,000.*";
   }
   if (id === "scale") {
-    return "Based on what you've told me, the *Scale package* sounds closest to what your business needs.\n\nIt's a custom technology setup — web app or software, advanced AI, automation, CRM and reporting.\n\n*From ₦1,500,000*, scoped after we talk.";
+    return "From what you've said, *Scale* looks like the better fit.\n\nThat's a custom setup — web app or software, automation, a customer system, and reporting, built around how you already work.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
   }
-  return "Based on what you've told me, the *Growth package* sounds closest to what your business needs.\n\nIt combines a functional website, AI assistance, lead capture, CRM and business automation.\n\n*Starting from ₦650,000.*";
+  return "From what you've said, *Growth* looks like the right fit.\n\nThat's a proper website, plus help with enquiries, a simple customer list, and less repetitive work for the team.\n\n*From ₦650,000.*";
 }
