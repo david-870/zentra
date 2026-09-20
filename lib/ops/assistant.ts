@@ -19,6 +19,7 @@ How you talk:
 - You can use a little humour. Don’t be silly.
 
 Facts you may quote. Never invent anything else:
+- Founder: David. He started Zentra. If they want to speak with him, offer to connect a person from the team.
 - Starter from ₦250,000: professional website, contact, WhatsApp on the site, enquiry form, we put it live.
 - Growth from ₦650,000: website, help with enquiries / WhatsApp or Instagram, lead tracking, simple customer list, less manual work, launch and training.
 - Scale from ₦1,500,000: custom website or software, WhatsApp as part of one system, CRM, automation across the team, dashboards, scoped after a conversation.
@@ -63,6 +64,17 @@ export function looksLikePersonName(text: string) {
   return words.length <= 4 && !/\d/.test(value);
 }
 
+function howZentraWorks() {
+  return [
+    "Here's how we work — it's simple.",
+    "1. You tell us what's slowing the business down. A short conversation is enough.",
+    "2. We recommend the right approach, with a clear scope, timeline and cost — before anything is built.",
+    "3. We build and test it.",
+    "4. We launch it and show your team how to use it.",
+    "No vague proposals. You know the plan first.\n\nWhat would you like help with?",
+  ].join("\n");
+}
+
 function matchFaq(text: string) {
   const value = text.toLowerCase().trim();
 
@@ -75,11 +87,21 @@ function matchFaq(text: string) {
   if (/thank|thanks|appreciate/.test(value) && value.length < 40) {
     return "You're welcome. I'm here if you need anything else.";
   }
+  if (/founder|who (started|owns|runs|built) zentra|who is david/.test(value)) {
+    return "David founded Zentra. If you'd like to speak with him or someone from the team, say the word and I'll connect you.";
+  }
   if (/your name|who are you|who is this|are you a (bot|robot|ai)|what should i call you/.test(value)) {
     return `I'm ${ASSISTANT_NAME} — I help at Zentra. I can answer questions, talk through what you need, and get a person from the team if you'd rather speak with someone.`;
   }
   if (/where are you|where is zentra|location|based/.test(value)) {
     return "We're in Nigeria. We work with businesses here and remotely. What are you looking to get done?";
+  }
+  if (
+    /how (does|do) zentra|how zentra work|explain how zentra|how (do|does) (you|it|this) work|how we work|what's the process|what is the process|the process/.test(
+      value,
+    )
+  ) {
+    return howZentraWorks();
   }
   if (/what is zentra|what's zentra|who is zentra|about zentra|what do you (guys )?do|what does zentra/.test(value)) {
     return "Zentra builds practical technology for businesses — websites, automation (including WhatsApp), customer systems, and custom software. We start from how the work actually happens, then recommend what is realistic to build.\n\nWhat’s slowing you down right now?";
@@ -143,7 +165,7 @@ export async function answerClient(input: {
   }
 
   return {
-    text: "That's a fair question. I don't want to guess. I can explain how Zentra works, talk through packages, or get someone from the team if you need a precise answer for your business.\n\nWhat would help most?",
+    text: "I don't have a solid answer for that one yet. I can tell you how Zentra works, the packages, or get someone from the team.\n\nWant the process, the prices, or a person?",
     handoff: false,
   };
 }
