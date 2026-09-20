@@ -11,9 +11,9 @@ export type LeadContext = {
 };
 
 export const WELCOME = [
-  "Hi 👋 Thanks for messaging Zentra.",
+  `Hi 👋 I'm Ada from Zentra.`,
   "We help businesses get found, keep up with customers, and take repetitive work off the team.",
-  "What can I help with today? Tap one, or just tell me in your own words.",
+  "You can ask me anything — or tell me what you need help with.",
   "1. Website / web app\n2. Automation\n3. CRM / customers\n4. Custom software\n5. Marketing\n6. See packages\n7. Talk to someone",
 ].join("\n\n");
 
@@ -36,7 +36,7 @@ const HANDOFF_PHRASES = [
 ];
 
 export function isGreeting(text: string) {
-  return /^(hi+|hii+|hello|hey+|yo|start(?: over)?|menu|restart|good (?:morning|afternoon|evening))\b/i.test(
+  return /^(hi+|hii+|hello|hey+|yo|start(?: over)?|menu|restart|good (?:morning|afternoon|evening))[\s!.]*$/i.test(
     text.trim(),
   );
 }

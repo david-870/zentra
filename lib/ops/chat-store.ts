@@ -344,6 +344,24 @@ export async function listChatLeads(): Promise<ChatLead[]> {
   }));
 }
 
+export async function listRecentMessages(conversationId: string, limit = 16) {
+  const client = await ensureChatTables();
+  const rows = (await client`
+    SELECT direction, text
+    FROM wa_messages
+    WHERE conversation_id = ${conversationId}
+    ORDER BY created_at DESC
+    LIMIT 16
+  `) as { direction?: string; text?: string }[];
+  return [...rows]
+    .reverse()
+    .slice(-limit)
+    .map((row) => ({
+      role: String(row.direction) === "IN" ? ("user" as const) : ("assistant" as const),
+      content: String(row.text ?? ""),
+    }));
+}
+
 export async function getChatLead(id: string) {
   if (!postgresConfigured()) return null;
   const client = await ensureChatTables();

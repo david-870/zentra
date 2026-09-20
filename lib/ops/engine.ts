@@ -1,9 +1,17 @@
 import { completeChat } from "@/lib/ops/ai";
 import {
+  answerClient,
+  isConversational,
+  isNumberedChoice,
+  looksLikePersonName,
+  SYSTEM_PROMPT,
+} from "@/lib/ops/assistant";
+import {
   addMessage,
   cancelFollowUps,
   getLeadByConversation,
   getOrCreateConversation,
+  listRecentMessages,
   messageExists,
   PACKAGE_FEATURES,
   saveConversation,
@@ -173,6 +181,28 @@ async function runStage(
     return { stopped: true };
   }
 
+  if (isConversational(text) && !isNumberedChoice(text)) {
+    const history = await listRecentMessages(conversation.id);
+    const answer = await answerClient({
+      text,
+      stage: conversation.stage,
+      ctx,
+      history: history.slice(0, -1),
+    });
+    if (answer.handoff) {
+      const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
+      await handoff(conversation, lead, phone, text);
+      return { handoff: true };
+    }
+    if (answer.text) {
+      await reply(conversation.id, phone, answer.text);
+      if (conversation.stage === "welcome") {
+        await saveContext(conversation.id, ctx, "need");
+      }
+      return { chat: true };
+    }
+  }
+
   let stage = conversation.stage;
   const need = detectNeed(text);
   if (need?.packageInterest && !ctx.packageInterest) {
@@ -241,7 +271,19 @@ async function runStage(
       return { stage };
     }
     if (!detected?.serviceInterest && !detected?.packageInterest) {
-      await reply(conversation.id, phone, "No worries. Is it more of a website, automation, a customer system, custom software, or marketing?");
+      const history = await listRecentMessages(conversation.id);
+      const answer = await answerClient({
+        text,
+        stage: "need",
+        ctx,
+        history: history.slice(0, -1),
+      });
+      await reply(
+        conversation.id,
+        phone,
+        answer.text ||
+          "No worries. Tell me what you need in your own words — a website, automation, a customer system, or something else.",
+      );
       return { stage };
     }
     Object.assign(ctx, detected);
@@ -253,7 +295,22 @@ async function runStage(
   }
 
   if (stage === "name") {
-    ctx.name = text.replace(/^i('m| am)\s+/i, "").trim();
+    if (!looksLikePersonName(text)) {
+      const history = await listRecentMessages(conversation.id);
+      const answer = await answerClient({
+        text,
+        stage: "name",
+        ctx,
+        history: history.slice(0, -1),
+      });
+      await reply(
+        conversation.id,
+        phone,
+        `${answer.text || "Happy to help."}\n\nWhat should I call you?`,
+      );
+      return { stage };
+    }
+    ctx.name = text.replace(/^(my name is|i am|i'm|i’m|call me)\s+/i, "").trim();
     stage = "business";
     await saveContext(conversation.id, ctx, stage);
     await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
@@ -368,12 +425,13 @@ async function runStage(
   }
 
   try {
+    const history = await listRecentMessages(conversation.id);
     const generated = await completeChat([
       {
         role: "system",
-        content:
-          "You are a helpful person on Zentra's WhatsApp. Sound warm, clear, and human — like a colleague, not a brochure or a form. Keep replies short. One question at a time. Never invent prices, timelines, discounts, clients or results. If unsure, offer to get someone from the team. Packages: Starter ₦250,000, Growth ₦650,000, Scale from ₦1,500,000.",
+        content: SYSTEM_PROMPT,
       },
+      ...history.slice(0, -1),
       { role: "user", content: text },
     ]);
     if (generated) {
