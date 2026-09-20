@@ -10,6 +10,7 @@ import { db } from "@/lib/ops/db";
 import { ENQUIRY_STATUSES, setWebsiteEnquiryArchived, updateWebsiteEnquiry } from "@/lib/ops/enquiry-postgres";
 import { runDueFollowUps } from "@/lib/ops/followups";
 import { notify } from "@/lib/ops/notify";
+import { addMessage, getChatLead, setChatLeadControl } from "@/lib/ops/chat-store";
 import { sendWhatsAppText } from "@/lib/ops/whatsapp";
 import { processCustomerText } from "@/lib/ops/engine";
 import { ensureSeed, safeEnsureSeed } from "@/lib/ops/seed";
@@ -20,7 +21,10 @@ function refreshOps(leadId?: string, enquiryId?: string) {
   revalidatePath("/ops/leads");
   revalidatePath("/ops/analytics");
   revalidatePath("/ops/knowledge");
-  if (leadId) revalidatePath(`/ops/leads/${leadId}`);
+  if (leadId) {
+    revalidatePath(`/ops/leads/${leadId}`);
+    revalidatePath(`/ops/chats/${leadId}`);
+  }
   if (enquiryId) revalidatePath(`/ops/enquiries/${enquiryId}`);
 }
 
@@ -234,6 +238,45 @@ export async function updateWebsiteEnquiryAction(formData: FormData) {
     followUpAt: followUp ? new Date(`${followUp}T09:00:00.000Z`) : null,
   });
   refreshOps(undefined, id);
+}
+
+export async function setChatControlAction(formData: FormData) {
+  const user = await requireUser();
+  if (!user) redirect("/ops/login");
+  const id = String(formData.get("id") ?? "");
+  const control = String(formData.get("control") ?? "") === "HUMAN" ? "HUMAN" : "AI";
+  if (!id) return;
+  await setChatLeadControl(id, control);
+  refreshOps(id);
+}
+
+export async function sendChatHumanMessage(formData: FormData) {
+  const user = await requireUser();
+  if (!user) redirect("/ops/login");
+  const id = String(formData.get("id") ?? "");
+  const text = String(formData.get("text") ?? "").trim();
+  if (!id || !text) return;
+
+  const lead = await getChatLead(id);
+  if (!lead) return;
+
+  await setChatLeadControl(id, "HUMAN");
+
+  try {
+    const sent = await sendWhatsAppText(lead.phone, text);
+    await addMessage(lead.conversationId, {
+      waMessageId: sent.id,
+      direction: "OUT",
+      author: "HUMAN",
+      text,
+    });
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "WhatsApp send failed";
+    console.error(detail);
+    redirect(`/ops/chats/${id}?send=error`);
+  }
+
+  refreshOps(id);
 }
 
 export async function archiveWebsiteEnquiryAction(formData: FormData) {

@@ -348,8 +348,14 @@ export async function getChatLead(id: string) {
   if (!postgresConfigured()) return null;
   const client = await ensureChatTables();
   const leads = (await client`
-    SELECT id, conversation_id, score, status, name, business_name, phone, package_interest, service_interest, problem, budget_range, created_at
-    FROM wa_leads WHERE id = ${id} LIMIT 1
+    SELECT
+      l.id, l.conversation_id, l.score, l.status, l.name, l.business_name, l.phone,
+      l.package_interest, l.service_interest, l.problem, l.budget_range, l.created_at,
+      c.control
+    FROM wa_leads l
+    JOIN wa_conversations c ON c.id = l.conversation_id
+    WHERE l.id = ${id}
+    LIMIT 1
   `) as Record<string, unknown>[];
   const lead = leads[0];
   if (!lead) return null;
@@ -363,6 +369,7 @@ export async function getChatLead(id: string) {
   return {
     id: String(lead.id),
     conversationId: String(lead.conversation_id),
+    control: String(lead.control) === "HUMAN" ? ("HUMAN" as const) : ("AI" as const),
     score: Number(lead.score ?? 0),
     status: String(lead.status ?? "NEW"),
     name: String(lead.name ?? ""),
@@ -380,4 +387,18 @@ export async function getChatLead(id: string) {
       createdAt: new Date(String(item.created_at)),
     })),
   };
+}
+
+export async function setChatLeadControl(leadId: string, control: ChatControl) {
+  const lead = await getChatLead(leadId);
+  if (!lead) return null;
+  const client = await ensureChatTables();
+  await saveConversation(lead.conversationId, { control, handoff: control === "HUMAN" });
+  const status = control === "HUMAN" ? "HUMAN_HANDOFF" : lead.status === "HUMAN_HANDOFF" ? "QUALIFYING" : lead.status;
+  await client`
+    UPDATE wa_leads
+    SET status = ${status}, updated_at = now()
+    WHERE id = ${leadId}
+  `;
+  return { ...lead, control, status };
 }

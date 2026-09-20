@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/ops/db";
 import { runFollowUpsAction, simulateInbound } from "@/app/ops/actions";
+import { listChatLeads } from "@/lib/ops/chat-store";
 import { listWebsiteEnquiries, postgresConfigured } from "@/lib/ops/enquiry-postgres";
 import { whatsappConfigured } from "@/lib/ops/whatsapp";
 
@@ -13,39 +14,25 @@ function formatWhen(value: Date) {
 
 export default async function OpsHome() {
   const enquiries = await listWebsiteEnquiries(8);
+  const chatLeads = await listChatLeads();
   const whatsapp = whatsappConfigured();
 
   let total = 0;
   let fresh = 0;
-  let qualified = 0;
   let handoff = 0;
   let won = 0;
   let due = 0;
-  let recent: {
-    id: string;
-    name: string | null;
-    businessName: string | null;
-    phone: string;
-    status: string;
-    conversation: { messages: { text: string }[] } | null;
-  }[] = [];
   let alerts: Awaited<ReturnType<typeof db.notification.findMany>> = [];
   let prismaReady = false;
 
   try {
-    [total, fresh, qualified, handoff, won, due] = await Promise.all([
+    [total, fresh, handoff, won, due] = await Promise.all([
       db.lead.count(),
       db.lead.count({ where: { status: "NEW" } }),
-      db.lead.count({ where: { status: "QUALIFIED" } }),
       db.lead.count({ where: { status: "HUMAN_HANDOFF" } }),
       db.lead.count({ where: { status: "WON" } }),
       db.followUp.count({ where: { cancelled: false, sentAt: null, scheduledAt: { lte: new Date() } } }),
     ]);
-    recent = await db.lead.findMany({
-      orderBy: { updatedAt: "desc" },
-      take: 8,
-      include: { conversation: { include: { messages: { orderBy: { createdAt: "desc" }, take: 1 } } } },
-    });
     alerts = await db.notification.findMany({ orderBy: { createdAt: "desc" }, take: 6 });
     prismaReady = true;
   } catch (error) {
@@ -100,6 +87,35 @@ export default async function OpsHome() {
         </ul>
       </section>
 
+      <section>
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-sm tracking-[0.12em] uppercase">WhatsApp leads</h2>
+          <Link href="/ops/leads" className="text-xs tracking-[0.08em] text-muted uppercase hover:text-text">
+            Open pipeline
+          </Link>
+        </div>
+        <ul className="mt-4 divide-y divide-line border border-line">
+          {chatLeads.slice(0, 8).map((lead) => (
+            <li key={lead.id} className="p-4">
+              <p className="text-lg">
+                {lead.name || "Unknown"} · {lead.businessName || "No business"}
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                {lead.phone} · {lead.status.replaceAll("_", " ")}
+              </p>
+              <p className="mt-2 text-sm text-muted">{lead.lastMessage || "No messages yet"}</p>
+              <Link
+                href={`/ops/chats/${lead.id}`}
+                className="mt-4 inline-flex min-h-12 items-center bg-white px-5 text-xs tracking-[0.08em] text-black uppercase"
+              >
+                Open conversation
+              </Link>
+            </li>
+          ))}
+          {chatLeads.length === 0 ? <li className="p-4 text-sm text-muted">No WhatsApp leads yet.</li> : null}
+        </ul>
+      </section>
+
       {prismaReady ? (
         <>
           <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -110,30 +126,6 @@ export default async function OpsHome() {
               </div>
             ))}
           </div>
-
-          <section>
-            <h2 className="text-sm tracking-[0.12em] uppercase">WhatsApp leads</h2>
-            <ul className="mt-4 divide-y divide-line border border-line">
-              {recent.map((lead) => (
-                <li key={lead.id} className="p-4">
-                  <p className="text-lg">
-                    {lead.name ?? "Unknown"} · {lead.businessName ?? "No business"}
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    {lead.phone} · {lead.status.replaceAll("_", " ")}
-                  </p>
-                  <p className="mt-2 text-sm text-muted">{lead.conversation?.messages[0]?.text ?? "No messages yet"}</p>
-                  <Link
-                    href={`/ops/leads/${lead.id}`}
-                    className="mt-4 inline-flex min-h-12 items-center bg-white px-5 text-xs tracking-[0.08em] text-black uppercase"
-                  >
-                    Open conversation
-                  </Link>
-                </li>
-              ))}
-              {recent.length === 0 ? <li className="p-4 text-sm text-muted">No WhatsApp leads yet.</li> : null}
-            </ul>
-          </section>
 
           <section className="grid gap-8">
             <div>
