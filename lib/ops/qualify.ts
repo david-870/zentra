@@ -8,12 +8,14 @@ export type LeadContext = {
   budgetRange?: string;
   source?: string;
   extraQuestion?: string;
+  lastTopic?: string;
+  qualifiedNotified?: boolean;
 };
 
 export const WELCOME = [
-  `Hi 👋 I'm Ada from Zentra.`,
+  `Hi — I'm Ada from Zentra.`,
   "We help businesses get found, keep up with customers, and take repetitive work off the team.",
-  "You can ask me anything — or tell me what you need help with.",
+  "Ask me anything about the work, or tell me what's slowing you down. If you prefer a list:",
   "1. Website / web app\n2. Automation\n3. CRM / customers\n4. Custom software\n5. Marketing\n6. See packages\n7. Talk to someone",
 ].join("\n\n");
 
@@ -28,17 +30,58 @@ const HANDOFF_PHRASES = [
   "speak with david",
   "speak to david",
   "talk to david",
+  "talk to the founder",
+  "speak to the founder",
+  "speak with the founder",
+  "talk to the owner",
+  "talk to the developer",
+  "speak to the developer",
   "can i speak",
+  "can i talk",
   "want to talk",
   "real person",
-  "your team",
+  "talk to your team",
+  "speak to your team",
+  "speak with your team",
   "question for your team",
+  "someone from the team",
+  "connect me to someone",
+  "please connect me",
+  "can someone call me",
+  "please call me",
+  "call me back",
 ];
 
 export function isGreeting(text: string) {
-  return /^(hi+|hii+|hello|hey+|yo|start(?: over)?|menu|restart|good (?:morning|afternoon|evening))[\s!.]*$/i.test(
+  return /^(hi+|hii+|hello|hey+|yo|how far|good (?:morning|afternoon|evening))[\s!.]*$/i.test(
     text.trim(),
   );
+}
+
+export function wantsRestart(text: string) {
+  return /^(start(?: over)?|menu|restart)[\s!.]*$/i.test(text.trim());
+}
+
+export function extractLeadHints(text: string, ctx: LeadContext): Partial<LeadContext> {
+  const updates: Partial<LeadContext> = {};
+  const trimmed = text.trim();
+
+  const named = trimmed.match(/^(?:my name is|i am|i'm|i’m|call me)\s+([A-Za-z][A-Za-z\s'-]{0,40})$/i);
+  if (named && !ctx.name) updates.name = named[1].trim();
+
+  const business = trimmed.match(
+    /(?:i run|i own|i have|we run|we own)\s+(?:a |an )?(.+?)(?: business)?[.!]?$/i,
+  ) || trimmed.match(/my business is (?:called )?(.+)/i);
+  if (business) {
+    const value = business[1].trim().replace(/\.$/, "");
+    if (!ctx.businessDescription) updates.businessDescription = value;
+    if (!ctx.businessName && value.split(/\s+/).length <= 4) updates.businessName = value;
+  }
+
+  const problem = trimmed.match(/(?:slowing us down|the problem is|i need help with|we're struggling with)\s+(.+)/i);
+  if (problem && !ctx.problem) updates.problem = problem[1].trim();
+
+  return updates;
 }
 
 export function wantsHandoff(text: string) {

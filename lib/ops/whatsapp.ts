@@ -140,6 +140,9 @@ export function parseIncoming(payload: unknown) {
             from: string;
             type?: string;
             text?: { body?: string };
+            image?: { caption?: string };
+            document?: { caption?: string };
+            video?: { caption?: string };
             interactive?: {
               type?: string;
               button_reply?: { id?: string; title?: string };
@@ -163,14 +166,16 @@ export function parseIncoming(payload: unknown) {
       message.interactive?.button_reply?.title ||
       message.interactive?.list_reply?.id ||
       message.interactive?.button_reply?.id;
-    const text = (message.text?.body || interactive || "").trim();
-    if (!text) continue;
+    const caption = message.image?.caption || message.document?.caption || message.video?.caption;
+    const text = (message.text?.body || interactive || caption || "").trim();
+    const attachment = /^(image|document|video|audio|sticker)$/i.test(message.type ?? "");
+    if (!text && !attachment) continue;
 
     return {
       id: message.id,
       from: message.from,
       name: value?.contacts?.[0]?.profile?.name,
-      text,
+      text: text || "[attachment]",
     };
   }
 

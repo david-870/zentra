@@ -18,6 +18,7 @@ export default async function OpsHome() {
   const whatsapp = whatsappConfigured();
   const fromNumber = whatsapp ? await getWhatsAppDisplayPhone() : "";
   const whatsappLive = Boolean(fromNumber);
+  const adaBrain = Boolean(String(process.env.AI_API_KEY ?? "").trim());
 
   let total = 0;
   let fresh = 0;
@@ -60,7 +61,8 @@ export default async function OpsHome() {
             ? "A WhatsApp ping is sent when a form arrives."
             : whatsapp
               ? "WhatsApp token is expired. Pings and auto-replies will not send until you paste a System User token in Vercel."
-              : "WhatsApp ping is off until Cloud API keys are set in Vercel."}
+              : "WhatsApp ping is off until Cloud API keys are set in Vercel."}{" "}
+          {adaBrain ? "Ada can think through harder questions." : "Ada is on notes only until AI_API_KEY is set in Vercel."}
         </p>
       </div>
 

@@ -1,10 +1,8 @@
-import { completeChat } from "@/lib/ops/ai";
 import {
   answerClient,
+  isConversational,
   isNumberedChoice,
   looksLikePersonName,
-  SYSTEM_PROMPT,
-  wantsSmartReply,
 } from "@/lib/ops/assistant";
 import {
   addMessage,
@@ -20,11 +18,13 @@ import {
   upsertLead,
   type ChatConversation,
 } from "@/lib/ops/chat-store";
+import { numberedService, topicFromText } from "@/lib/ops/intent";
 import { notifyOwner } from "@/lib/ops/owner-notify";
 import {
   extraQuestion,
   detectBudget,
   detectNeed,
+  extractLeadHints,
   firstName,
   isGreeting,
   LeadContext,
@@ -33,9 +33,12 @@ import {
   recommendationCopy,
   scoreLead,
   wantsHandoff,
+  wantsRestart,
   WELCOME,
 } from "@/lib/ops/qualify";
 import { sendWhatsAppList, sendWhatsAppText, whatsappConfigured, normalizeWaPhone } from "@/lib/ops/whatsapp";
+
+const FORM_STAGES = new Set(["name", "business", "does", "problem", "context", "budget", "recommend"]);
 
 function readContext(raw: string): LeadContext {
   try {
@@ -95,7 +98,34 @@ async function handoff(conversation: ChatConversation, lead: { id: string; score
   await reply(
     conversation.id,
     to,
-    "Of course. I'll get someone from the team on this chat now — they'll pick it up from here.",
+    /\bcall me\b|\bphone (call|me)\b/i.test(reason)
+      ? "Of course. I'll get someone from the team on this WhatsApp chat now — they'll pick it up from here. I don't have a confirmed phone-call process in my notes."
+      : "Of course. I'll get someone from the team on this chat now — they'll pick it up from here.",
+  );
+}
+
+async function maybeNotifyQualified(
+  conversation: ChatConversation,
+  contactId: string,
+  phone: string,
+  ctx: LeadContext,
+) {
+  const ready = Boolean(
+    (ctx.name || ctx.businessName) && (ctx.problem || ctx.serviceInterest || ctx.businessDescription),
+  );
+  if (!ready || ctx.qualifiedNotified) return;
+  ctx.qualifiedNotified = true;
+  const lead = await writeLead(contactId, conversation.id, phone, ctx, "QUALIFIED");
+  await scheduleFollowUps(lead.id, ctx.name ?? "there");
+  await notifyOwner(
+    "ZENTRA WHATSAPP — QUALIFIED LEAD",
+    [
+      `Name: ${ctx.name ?? "—"}`,
+      `Business: ${ctx.businessName ?? ctx.businessDescription ?? "—"}`,
+      `Need: ${ctx.problem ?? ctx.serviceInterest ?? "—"}`,
+      `Package: ${ctx.packageInterest ?? "—"}`,
+      `Phone: ${phone}`,
+    ].join("\n"),
   );
 }
 
@@ -125,13 +155,13 @@ export async function processCustomerText(input: {
   if (!ctx.source) ctx.source = "whatsapp";
   if (input.profileName && !ctx.name) ctx.name = input.profileName;
 
-  if (isGreeting(input.text)) {
+  if (wantsRestart(input.text)) {
     await saveConversation(conversation.id, { control: "AI", stage: "welcome" });
     conversation.control = "AI";
     conversation.stage = "welcome";
   }
 
-  const lead = await writeLead(
+  await writeLead(
     contactId,
     conversation.id,
     phone,
@@ -161,6 +191,32 @@ export async function processCustomerText(input: {
   }
 }
 
+function mergeHints(ctx: LeadContext, text: string) {
+  Object.assign(ctx, extractLeadHints(text, ctx));
+  const picked = numberedService(text);
+  if (picked && picked !== "human" && picked !== "packages") {
+    ctx.serviceInterest = picked;
+    ctx.lastTopic = picked;
+  }
+  const need = detectNeed(text);
+  if (need?.serviceInterest && need.serviceInterest !== "human" && need.serviceInterest !== "packages") {
+    if (!ctx.serviceInterest) ctx.serviceInterest = need.serviceInterest;
+    ctx.lastTopic = need.serviceInterest;
+  }
+  if (need?.packageInterest && !ctx.packageInterest) ctx.packageInterest = need.packageInterest;
+  const topic = topicFromText(text);
+  if (topic) ctx.lastTopic = topic;
+}
+
+function looksLikeFormAnswer(stage: string, text: string) {
+  if (!FORM_STAGES.has(stage)) return false;
+  if (isConversational(text) || text.includes("?")) return false;
+  if (isNumberedChoice(text) && (stage === "budget" || stage === "recommend")) return true;
+  if (stage === "name") return looksLikePersonName(text);
+  if (wantsHandoff(text)) return false;
+  return text.trim().split(/\s+/).length <= 12;
+}
+
 async function runStage(
   conversation: ChatConversation,
   contactId: string,
@@ -168,7 +224,7 @@ async function runStage(
   text: string,
   ctx: LeadContext,
 ) {
-  if (wantsHandoff(text) || ctx.serviceInterest === "human") {
+  if (wantsHandoff(text) || ctx.serviceInterest === "human" || numberedService(text) === "human") {
     const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
     await handoff(conversation, lead, phone, text);
     return { handoff: true };
@@ -181,63 +237,20 @@ async function runStage(
     return { stopped: true };
   }
 
-  if (wantsSmartReply(text) && !isNumberedChoice(text)) {
-    const history = await listRecentMessages(conversation.id);
-    const answer = await answerClient({
-      text,
-      stage: conversation.stage,
-      ctx,
-      history: history.slice(0, -1),
-    });
-    if (answer.handoff) {
-      const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
-      await handoff(conversation, lead, phone, text);
-      return { handoff: true };
-    }
-    if (answer.text) {
-      await reply(conversation.id, phone, answer.text);
-      if (conversation.stage === "welcome") {
-        await saveContext(conversation.id, ctx, "need");
-      }
-      return { chat: true };
-    }
-  }
+  mergeHints(ctx, text);
 
-  let stage = conversation.stage;
-  const need = detectNeed(text);
-  if (need?.packageInterest && !ctx.packageInterest) {
-    Object.assign(ctx, need);
-    if (ctx.source === "website") {
-      stage = "name";
-      await saveContext(conversation.id, ctx, stage);
-      await reply(
-        conversation.id,
-        phone,
-        `Thanks for taking a look at ${packageLabel(ctx.packageInterest)}. I'll ask a few quick questions so we point you the right way.\n\nWhat should I call you?`,
-      );
-      await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-      return { stage };
-    }
-  }
+  const fresh =
+    isGreeting(text) &&
+    (conversation.stage === "welcome" || conversation.stage === "need") &&
+    !ctx.serviceInterest &&
+    !ctx.problem &&
+    !ctx.businessDescription;
 
-  if (stage === "welcome") {
-    const detected = detectNeed(text);
-    if (detected?.serviceInterest === "human") {
-      const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
-      await handoff(conversation, lead, phone, text);
-      return { handoff: true };
-    }
-    if (detected?.serviceInterest && detected.serviceInterest !== "packages") {
-      Object.assign(ctx, detected);
-      await saveContext(conversation.id, ctx, "name");
-      await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-      await reply(conversation.id, phone, "Great — I can help with that. What should I call you?");
-      return { stage: "name" };
-    }
+  if (fresh || wantsRestart(text)) {
     await reply(conversation.id, phone, WELCOME);
     if (whatsappConfigured()) {
       try {
-        await sendWhatsAppList(phone, "Tap one, or just type it in your own words.", "Choose", [
+        await sendWhatsAppList(phone, "Or tap one and I'll explain it.", "Choose", [
           { id: "website", title: "Website / Web App" },
           { id: "automation", title: "AI & Automation" },
           { id: "crm", title: "CRM / Customers" },
@@ -250,66 +263,60 @@ async function runStage(
         console.error(error);
       }
     }
-    await saveContext(conversation.id, ctx, "need");
+    await saveContext(conversation.id, ctx, "chat");
     await writeLead(contactId, conversation.id, phone, ctx, "NEW");
-    return { stage: "need" };
+    return { stage: "chat" };
   }
 
-  if (stage === "need") {
-    const detected = detectNeed(text);
-    if (detected?.serviceInterest === "human") {
-      const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
-      await handoff(conversation, lead, phone, text);
-      return { handoff: true };
-    }
-    if (detected?.serviceInterest === "packages") {
-      await reply(
-        conversation.id,
-        phone,
-        "Here's a simple way to think about it:\n\n*Starter* — from ₦250,000 — a proper website and WhatsApp.\n*Growth* — from ₦650,000 — website, enquiries, CRM and less manual work.\n*Scale* — from ₦1,500,000 — custom systems for how you already work.\n\nWhich feels closest? Or just tell me the problem you're trying to fix.",
-      );
-      return { stage };
-    }
-    if (!detected?.serviceInterest && !detected?.packageInterest) {
-      const history = await listRecentMessages(conversation.id);
-      const answer = await answerClient({
-        text,
-        stage: "need",
-        ctx,
-        history: history.slice(0, -1),
-      });
-      await reply(
-        conversation.id,
-        phone,
-        answer.text ||
-          "No worries. Tell me what you need in your own words — a website, automation, a customer system, or something else.",
-      );
-      return { stage };
-    }
-    Object.assign(ctx, detected);
-    stage = "name";
-    await saveContext(conversation.id, ctx, stage);
-    await writeLead(contactId, conversation.id, phone, ctx, "QUALIFYING");
-    await reply(conversation.id, phone, "Lovely. What should I call you?");
-    return { stage };
+  if (looksLikeFormAnswer(conversation.stage, text)) {
+    return continueForm(conversation, contactId, phone, text, ctx);
   }
+
+  const history = await listRecentMessages(conversation.id);
+  const answer = await answerClient({
+    text,
+    stage: conversation.stage === "welcome" || conversation.stage === "need" ? "chat" : conversation.stage,
+    ctx,
+    history: history.slice(0, -1),
+  });
+
+  if (answer.lastTopic) ctx.lastTopic = answer.lastTopic;
+  const stage = answer.qualify ? (ctx.name ? "chat" : "name") : conversation.stage === "welcome" ? "chat" : conversation.stage || "chat";
+
+  if (answer.handoff) {
+    await reply(conversation.id, phone, answer.text);
+    const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
+    await saveConversation(conversation.id, { control: "HUMAN", stage: "handoff", handoff: true });
+    await notifyOwner(
+      "ZENTRA WHATSAPP — HUMAN NEEDED",
+      [`Phone: ${phone}`, `Reason: ${text.slice(0, 280)}`].join("\n"),
+    );
+    return { handoff: true };
+  }
+
+  await reply(conversation.id, phone, answer.text);
+  if (answer.qualify) await maybeNotifyQualified(conversation, contactId, phone, ctx);
+  await saveContext(conversation.id, ctx, stage);
+  await writeLead(
+    contactId,
+    conversation.id,
+    phone,
+    ctx,
+    answer.qualify ? "QUALIFYING" : ctx.serviceInterest || ctx.problem ? "QUALIFYING" : "NEW",
+  );
+  return { chat: true };
+}
+
+async function continueForm(
+  conversation: ChatConversation,
+  contactId: string,
+  phone: string,
+  text: string,
+  ctx: LeadContext,
+) {
+  let stage = conversation.stage;
 
   if (stage === "name") {
-    if (!looksLikePersonName(text)) {
-      const history = await listRecentMessages(conversation.id);
-      const answer = await answerClient({
-        text,
-        stage: "name",
-        ctx,
-        history: history.slice(0, -1),
-      });
-      await reply(
-        conversation.id,
-        phone,
-        `${answer.text || "Happy to help."}\n\nWhat should I call you?`,
-      );
-      return { stage };
-    }
     ctx.name = text.replace(/^(my name is|i am|i'm|i’m|call me)\s+/i, "").trim();
     stage = "business";
     await saveContext(conversation.id, ctx, stage);
@@ -401,7 +408,10 @@ async function runStage(
       await reply(
         conversation.id,
         phone,
-        `${packageLabel(ctx.packageInterest) || "Growth"} includes:\n${features.split("; ").map((item) => `• ${item}`).join("\n")}\n\nWant to start a project, or talk it through with the team?`,
+        `${packageLabel(ctx.packageInterest) || "Growth"} includes:\n${features
+          .split("; ")
+          .map((item) => `• ${item}`)
+          .join("\n")}\n\nWant to start a project, or talk it through with the team?`,
       );
       return { stage };
     }
@@ -424,30 +434,14 @@ async function runStage(
     return { complete: true };
   }
 
-  try {
-    const history = await listRecentMessages(conversation.id);
-    const generated = await completeChat([
-      {
-        role: "system",
-        content: SYSTEM_PROMPT,
-      },
-      ...history.slice(0, -1),
-      { role: "user", content: text },
-    ]);
-    if (generated) {
-      await reply(conversation.id, phone, generated);
-      return { llm: true };
-    }
-  } catch {
-    const lead = await getLeadByConversation(conversation.id);
-    await handoff(conversation, lead, phone, "AI provider failed");
-    return { handoff: true };
-  }
-
-  await reply(
-    conversation.id,
-    phone,
-    "I'm not sure on that one. Want me to get someone from the team to jump in?",
-  );
-  return { unknown: true };
+  const history = await listRecentMessages(conversation.id);
+  const answer = await answerClient({
+    text,
+    stage,
+    ctx,
+    history: history.slice(0, -1),
+  });
+  await reply(conversation.id, phone, answer.text);
+  await saveContext(conversation.id, ctx, "chat");
+  return { chat: true };
 }

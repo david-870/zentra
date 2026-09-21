@@ -1,3 +1,6 @@
+import { BUSINESS, businessPrompt } from "@/lib/ops/business-context";
+import { SERVICE_GUIDES } from "@/lib/ops/service-guide";
+
 export type KnowledgeChunk = {
   id: string;
   tags: string[];
@@ -6,126 +9,127 @@ export type KnowledgeChunk = {
 
 export const KNOWLEDGE: KnowledgeChunk[] = [
   {
-    id: "ada",
-    tags: ["name", "ada", "who", "you", "bot", "assistant", "ai", "robot"],
-    answer:
-      "I'm Ada — I help at Zentra. I can answer questions, talk through what you need, and get a person from the team if you'd rather speak with someone.",
+    id: "company",
+    tags: ["zentra", "company", "about", "what", "do", "does", "studio", "agency", "help"],
+    answer: `${BUSINESS.what}\n\n${BUSINESS.value}\n\n${BUSINESS.whoFor}`,
   },
   {
     id: "founder",
     tags: ["founder", "david", "owner", "ceo", "started", "built", "runs", "who"],
-    answer:
-      "David founded Zentra. If you'd like to speak with him or someone from the team, say the word and I'll connect you.",
+    answer: `${BUSINESS.founder.known} ${BUSINESS.founder.unknown}`,
   },
   {
-    id: "company",
-    tags: ["zentra", "company", "about", "what", "do", "does", "studio", "agency"],
+    id: "ada",
+    tags: ["name", "ada", "who", "you", "bot", "assistant", "ai", "robot"],
     answer:
-      "Zentra builds practical technology for businesses — websites, automation (including WhatsApp), customer systems, and custom software. We start from how the work actually happens, then recommend what is realistic to build.\n\nWhat's slowing you down right now?",
+      "I'm Ada — I help at Zentra. I can answer questions, explain the work, talk through what you need, and get a person from the team if you'd rather speak with someone.",
   },
   {
     id: "process",
-    tags: ["process", "work", "works", "how", "steps", "consult", "explain", "approach"],
-    answer: [
-      "Here's how we work — it's simple.",
-      "1. You tell us what's slowing the business down. A short conversation is enough.",
-      "2. We recommend the right approach, with a clear scope, timeline and cost — before anything is built.",
-      "3. We build and test it.",
-      "4. We launch it and show your team how to use it.",
-      "No vague proposals. You know the plan first.\n\nWhat would you like help with?",
-    ].join("\n"),
+    tags: ["process", "work", "works", "how", "steps", "consult", "approach"],
+    answer: `${BUSINESS.process.headline}\n${BUSINESS.process.steps.map((step, index) => `${index + 1}. ${step}`).join("\n")}\n${BUSINESS.process.support}`,
   },
   {
     id: "packages",
     tags: ["package", "packages", "price", "pricing", "cost", "how", "much", "starter", "growth", "scale", "naira"],
-    answer:
-      "Three starting points:\n\n*Starter* from ₦250,000 — a proper website and WhatsApp.\n*Growth* from ₦650,000 — website, enquiries, a simple customer list, and less manual work.\n*Scale* from ₦1,500,000 — custom systems, scoped after we talk.\n\nWhich sounds closest, or tell me the problem you're trying to fix?",
-  },
-  {
-    id: "starter",
-    tags: ["starter", "cheap", "small", "first", "begin", "basic", "simple"],
-    answer:
-      "Starter is for getting found properly. A professional site that works on a phone, a simple way for customers to reach you, WhatsApp on the site, a form so enquiries aren't lost, and we put it live for you. From ₦250,000.",
-  },
-  {
-    id: "growth",
-    tags: ["growth", "enquir", "leads", "follow", "crm", "busy", "messages", "pile"],
-    answer:
-      "Growth is for when people are already reaching you, but follow-up is messy. Website, WhatsApp or Instagram replies, lead tracking, a simple customer list, less repetitive work, then launch and training. From ₦650,000.",
-  },
-  {
-    id: "scale",
-    tags: ["scale", "custom", "software", "dashboard", "integrate", "spreadsheet", "system"],
-    answer:
-      "Scale is for businesses that need something built around how they already work — a custom website or web app, WhatsApp as part of one system, a customer system the team can run, automation across people and tools, dashboards. From ₦1,500,000, confirmed after we talk.",
+    answer: BUSINESS.packages.map((item) => `*${item.name}* — ${item.price}. ${item.description}`).join("\n"),
   },
   {
     id: "website",
-    tags: ["website", "site", "web", "page", "landing", "online"],
-    answer:
-      "Yes — we build websites and web apps, from a simple site that works well on a phone to something custom. We can also add WhatsApp and an enquiry form so messages don't get lost.\n\nDo you already have a site, or would this be new?",
-  },
-  {
-    id: "existing-site",
-    tags: ["already", "existing", "have", "current", "old"],
-    answer:
-      "Yes — we can work with a site you already have, or build a new one if this one isn't doing the job. A lot of people come for automation and enquiry follow-up on top of what they already have.\n\nWhat would you like to improve?",
+    tags: ["website", "site", "web", "page", "landing", "online", "webapp", "entail", "explain"],
+    answer: SERVICE_GUIDES.website.answer,
   },
   {
     id: "automation",
-    tags: ["automat", "whatsapp", "instagram", "ai", "chatbot", "reply", "busy", "repeat"],
-    answer:
-      "Yes. We set up WhatsApp and other automation so customers get a reply, enquiries aren't lost, and the team isn't typing the same thing all day. I'm an example of that kind of help.\n\nIs that what you need, or is it more of a website or a customer system?",
+    tags: ["automat", "whatsapp", "instagram", "ai", "chatbot", "reply", "busy", "repeat", "messages"],
+    answer: SERVICE_GUIDES.automation.answer,
   },
   {
     id: "crm",
     tags: ["crm", "customer", "customers", "leads", "follow", "list", "pipeline"],
-    answer:
-      "A customer system (CRM) is simply a place to keep people, leads and follow-up so nothing sits in someone's head or a random chat. We build one your team can actually run — not a tool nobody opens.\n\nHow do you keep track of customers today?",
+    answer: SERVICE_GUIDES.crm.answer,
   },
   {
     id: "software",
-    tags: ["software", "app", "tool", "spreadsheet", "internal", "custom"],
-    answer:
-      "If the work lives in spreadsheets, chats and memory, we can turn that into software your team uses every day. We don't guess the features — we watch how you work, then build around that.\n\nWhat does the team still do by hand?",
+    tags: ["software", "app", "tool", "spreadsheet", "internal", "custom", "mobile"],
+    answer: SERVICE_GUIDES.software.answer,
   },
   {
     id: "marketing",
-    tags: ["marketing", "ads", "customers", "found", "growth", "instagram", "leads"],
-    answer:
-      "We help with getting found and turning that into real enquiries — not empty traffic. Often that sits with a better site, WhatsApp, and a way to follow up.\n\nWhere do most of your customers find you now?",
+    tags: ["marketing", "ads", "found", "growth", "instagram"],
+    answer: SERVICE_GUIDES.marketing.answer,
+  },
+  {
+    id: "existing-site",
+    tags: ["already", "existing", "have", "current", "old", "shopify", "wordpress", "developer", "migrate", "audit", "integrate"],
+    answer: BUSINESS.existingSystems,
+  },
+  {
+    id: "marketing-vs-tech",
+    tags: ["ads", "content", "instagram", "tiktok", "facebook", "brand", "followers", "leads", "strategy"],
+    answer: BUSINESS.marketingVsTech,
+  },
+  {
+    id: "hosting",
+    tags: ["domain", "hosting", "host", "maintain", "maintenance", "support", "monthly", "down"],
+    answer: BUSINESS.hosting,
+  },
+  {
+    id: "payment-terms",
+    tags: ["deposit", "instalment", "installment", "payment", "plan", "pay"],
+    answer: BUSINESS.paymentTerms,
+  },
+  {
+    id: "careers",
+    tags: ["intern", "internship", "mentor", "hiring", "freelance", "student", "developer", "join"],
+    answer: BUSINESS.careers,
+  },
+  {
+    id: "partnership",
+    tags: ["partner", "collaborate", "referral", "reseller"],
+    answer: BUSINESS.partnership,
+  },
+  {
+    id: "location-remote",
+    tags: ["nigeria", "nigerian", "international", "remotely", "based", "office"],
+    answer: BUSINESS.credibility,
+  },
+  {
+    id: "free-work",
+    tags: ["free"],
+    answer: BUSINESS.freeWork,
+  },
+  {
+    id: "consultation",
+    tags: ["consultation", "discount", "promo", "offer"],
+    answer: BUSINESS.consultation,
   },
   {
     id: "timeline",
     tags: ["long", "soon", "timeline", "when", "days", "weeks", "duration", "fast"],
     answer:
-      "It depends on the work. After a short conversation we give a clear scope, timeline and cost — before anything is built. That's the point: you know the plan first. Want to tell me what you need?",
+      "It depends on the work. After a short conversation we give a clear scope, timeline and cost — before anything is built. There isn't a single number of days that fits every project.",
   },
   {
     id: "location",
-    tags: ["where", "nigeria", "lagos", "location", "based", "country"],
-    answer: "We're in Nigeria. We work with businesses here and remotely. What are you looking to get done?",
+    tags: ["where", "nigeria", "lagos", "abuja", "location", "based", "country", "office"],
+    answer: `${BUSINESS.location.known} ${BUSINESS.location.unknownOffices}`,
   },
   {
-    id: "who-for",
-    tags: ["small", "business", "sme", "company", "startup", "who"],
+    id: "training",
+    tags: ["teach", "learn", "class", "course", "training", "html", "css", "react", "wordpress", "intern", "mentor", "hiring"],
     answer:
-      "We work with small businesses and larger companies. If customers can't find you, enquiries pile up, or the team repeats the same tasks every day — that's the kind of problem we take on.",
+      "Zentra builds systems for businesses. There is no confirmed public coding school, internship, mentorship or jobs board in the assistant's knowledge. After a project we show the client's team how to use what we built. If someone wants to learn, say that clearly and offer the team rather than inventing a course.",
+  },
+  {
+    id: "eligibility",
+    tags: ["small", "startup", "individual", "established", "budget", "new", "one"],
+    answer: `${BUSINESS.whoFor} ${BUSINESS.eligibility.smallAndNew} ${BUSINESS.eligibility.established} ${BUSINESS.eligibility.noWebsiteYet}`,
   },
   {
     id: "handoff",
     tags: ["human", "person", "david", "team", "someone", "call", "speak"],
     answer: "Of course. I can get someone from the team on this chat now — they'll pick it up from here.",
-  },
-  {
-    id: "social-how-are-you",
-    tags: ["how", "are", "you", "going", "feeling"],
-    answer: "I'm doing well, thanks for asking. How are you?",
-  },
-  {
-    id: "thanks",
-    tags: ["thank", "thanks", "appreciate"],
-    answer: "You're welcome. I'm here if you need anything else.",
   },
 ];
 
@@ -177,11 +181,13 @@ const STOP = new Set([
 
 const SYNONYMS: Record<string, string[]> = {
   founder: ["david", "owner", "ceo", "started"],
-  process: ["work", "works", "steps", "consult", "explain"],
+  process: ["work", "works", "steps", "consult"],
   price: ["cost", "pricing", "much", "package", "naira"],
-  website: ["site", "web", "page"],
-  automation: ["whatsapp", "instagram", "chatbot", "ai", "reply"],
-  crm: ["leads", "customers", "follow"],
+  website: ["site", "web", "page", "landing", "webapp"],
+  automation: ["whatsapp", "instagram", "chatbot", "ai", "reply", "messages"],
+  crm: ["leads", "customers", "follow", "pipeline"],
+  software: ["app", "tool", "spreadsheet", "system", "custom", "mobile"],
+  marketing: ["ads", "traffic", "found"],
   ada: ["name", "bot", "assistant"],
 };
 
@@ -221,5 +227,5 @@ export function retrieveKnowledge(query: string, limit = 4) {
 }
 
 export function knowledgePrompt() {
-  return KNOWLEDGE.map((chunk) => `### ${chunk.id}\n${chunk.answer}`).join("\n\n");
+  return businessPrompt();
 }

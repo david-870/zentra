@@ -21,7 +21,7 @@ export async function completeChat(messages: ChatTurn[]) {
     body: JSON.stringify({
       model,
       temperature: 0.7,
-      max_tokens: 700,
+      max_tokens: 900,
       messages,
     }),
   });

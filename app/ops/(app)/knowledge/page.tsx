@@ -11,7 +11,7 @@ export default async function KnowledgePage() {
       <div>
         <h1 className="font-display text-4xl">Knowledge</h1>
         <p className="mt-2 max-w-xl text-sm text-muted">
-          The assistant answers from this, not from invented copy. Update prices and policies here.
+          Ada answers from the live website content and confirmed packages. This page is a local notes store; it does not currently change WhatsApp replies.
         </p>
       </div>
       <div className="grid gap-4">
