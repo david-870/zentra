@@ -1,3 +1,5 @@
+import { foldText } from "@/lib/ops/intent";
+
 export type SituationId =
   | "complaint"
   | "career"
@@ -40,7 +42,7 @@ const RULES: { id: SituationId; pattern: RegExp }[] = [
   {
     id: "career",
     pattern:
-      /\b(i'?m a (developer|student)|learning coding|freelance for (you|zentra)|join (your|the) team|developer opportunities|learn from your (developers|team)|hire junior|junior developers)\b/i,
+      /\b(i['']?m a (developer|student)|i am a (developer|student)|learning coding|freelance for (you|zentra)|join (your|the) team|developer opportunities|learn from your (developers|team)|hire junior|junior developers|developer.{0,40}work with zentra)\b/i,
   },
   {
     id: "partnership",
@@ -151,9 +153,14 @@ const RULES: { id: SituationId; pattern: RegExp }[] = [
 ];
 
 export function detectSituation(text: string): SituationId | null {
-  const value = text.toLowerCase();
+  const value = foldText(text);
+  if (/^(joining|join|freelance|partnering)s?[!.]*$/.test(value)) return "career";
   for (const rule of RULES) {
-    if (rule.pattern.test(value)) return rule.id;
+    if (!rule.pattern.test(value)) continue;
+    if (rule.id === "work_with_ambiguous" && /\b(developer|student|intern|freelance|join)\b/.test(value)) {
+      return "career";
+    }
+    return rule.id;
   }
   return null;
 }
@@ -167,7 +174,7 @@ export function situationReply(id: SituationId): string {
     case "complaint":
       return `I'm sorry that's been frustrating. I don't want to argue or keep you in an automated loop, and I don't have a refund or fix policy I can apply from here.\n\nI'll connect you with someone from the Zentra team on this chat — they'll pick it up from here.`;
     case "career":
-      return `I don't have confirmed internships, hiring, freelance roles, or a mentorship programme in my notes. Zentra's public offer is building websites and systems for businesses — not a school or a jobs board.\n\nI can connect you with someone from the team if you still want to ask a person. If you actually need something built for a business, I can help with that instead.`;
+      return `We don't have a confirmed jobs board, internship or freelance roster — Zentra's public offer is building systems for businesses.\n\nI can still connect you with someone from the team if you want to ask a person. If you actually need a website or system built, I can help with that.`;
     case "partnership":
       return `That sounds like a partnership or collaboration enquiry. I don't have a confirmed referral programme, reseller offer, or partnership pack in my notes, and I don't want to invent one.\n\nI'll connect you with someone from the team on this chat so they can take it from here.`;
     case "work_with_ambiguous":

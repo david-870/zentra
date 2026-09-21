@@ -38,6 +38,16 @@ function run() {
       expect: (text) => /website|automation|software/i.test(text) && !/fair question/i.test(text),
     },
     {
+      title: "Hi",
+      text: "Hi",
+      expect: (text) => /ada/i.test(text) && !/don't have confirmed information about that/i.test(text),
+    },
+    {
+      title: "Who are you",
+      text: "Who are you",
+      expect: (text) => /ada/i.test(text) && /zentra/i.test(text) && !/don't have confirmed information about that/i.test(text),
+    },
+    {
       title: "Who founded Zentra?",
       text: "Who founded Zentra?",
       expect: (text) => /david/i.test(text),
@@ -60,7 +70,7 @@ function run() {
     {
       title: "Can you build a website?",
       text: "Can you build a website?",
-      expect: (text) => /website/i.test(text) && !/what should i call you/i.test(text),
+      expect: (text) => /^yes/i.test(text) && /website/i.test(text) && !/a web app is different/i.test(text),
     },
     {
       title: "I need an app.",
@@ -349,9 +359,9 @@ function run() {
       expect: (text) => /short conversation|scope/i.test(text) && /don't|do not|not/i.test(text) && !/yes, you get a free consultation package/i.test(text),
     },
     {
-      title: "I'm a developer. Can I work with Zentra?",
-      text: "I'm a developer. Can I work with Zentra?",
-      expect: (text) => /don't have confirmed|do not have confirmed/i.test(text) && /intern|hiring|freelance|mentor/i.test(text) && !/yes, we (are hiring|have internships)/i.test(text),
+      title: "I'm a developer can I work with Zentra",
+      text: "I'm a developer can I work with Zentra",
+      expect: (text) => /jobs board|intern|freelance/i.test(text) && !/point you the right way/i.test(text),
     },
     {
       title: "Do you have a referral program?",
@@ -487,6 +497,12 @@ function run() {
   turn = reply("Website", shortCtx, shortHistory);
   turn = reply("Can you do this?", shortCtx, shortHistory);
   check(/website|figure that out/i.test(turn.text) && !/what would help most/i.test(turn.text), "Can you do this? after Website uses context");
+
+  const careerCtx: LeadContext = {};
+  const careerHistory: Turn[] = [];
+  turn = reply("I'm a developer can I work with Zentra", careerCtx, careerHistory);
+  turn = reply("Joining", careerCtx, careerHistory);
+  check(/jobs board|intern|freelance/i.test(turn.text) && !/don't have confirmed information about that/i.test(turn.text), "Joining after developer question is a career answer");
 
   console.log(`\n${passed} passed, ${failed} failed`);
   if (failed) process.exit(1);

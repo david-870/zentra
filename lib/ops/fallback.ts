@@ -1,6 +1,6 @@
 import { BUSINESS } from "@/lib/ops/business-context";
 import { capabilityReply, detectCapability, nextTopicFor } from "@/lib/ops/capabilities";
-import { detectIntent, lastAssistantText } from "@/lib/ops/intent";
+import { detectIntent, foldText, lastAssistantText } from "@/lib/ops/intent";
 import type { LeadContext } from "@/lib/ops/qualify";
 import { detectSituation, situationHandoff, situationReply, situationTopic } from "@/lib/ops/situations";
 import { explainService } from "@/lib/ops/service-guide";
@@ -41,9 +41,40 @@ export function fallbackAnswer(
   ctx: LeadContext,
   history: { role: "user" | "assistant"; content: string }[] = [],
 ): { text: string; handoff: boolean; qualify: boolean } {
+  const value = foldText(text);
   const { intent, topic } = detectIntent(text, ctx, history);
   const business = ctx.businessDescription || ctx.businessName;
   const aboutThem = business ? ` For ${business},` : "";
+  const previous = lastAssistantText(history);
+
+  if (intent === "greeting") {
+    return {
+      text: "Hi — I'm Ada from Zentra. I can explain the work, talk through what's slowing the business down, or get someone from the team.\n\nWhat do you need help with?",
+      handoff: false,
+      qualify: false,
+    };
+  }
+
+  if (intent === "identity") {
+    return {
+      text: "I'm Ada — I help at Zentra. I can answer questions about the work, talk through what you need, and get a person from the team if you'd rather speak with someone.\n\nWhat brought you here?",
+      handoff: false,
+      qualify: false,
+    };
+  }
+
+  if (previous && /joining, freelancing, or partnering|joining or partnering/i.test(previous)) {
+    if (/join|freelance|partner|team|job|career|intern/i.test(value)) {
+      return { text: situationReply("career"), handoff: false, qualify: false };
+    }
+    if (/business|build|website|client|need help/i.test(value)) {
+      return {
+        text: "Got it — you want Zentra to build something. We do websites, WhatsApp automation, customer systems and custom software.\n\nWhat's slowing the business down?",
+        handoff: false,
+        qualify: false,
+      };
+    }
+  }
 
   const situation = detectSituation(text);
   if (situation === "vague_this" && ctx.lastTopic) {
@@ -266,18 +297,18 @@ export function fallbackAnswer(
   }
 
   if (intent === "website") {
-    if (/ecommerce|e-commerce|online store|online shop|shop online/.test(text.toLowerCase()) || /pay|checkout|accept payment|take payment/.test(text.toLowerCase())) {
+    if (/ecommerce|e-commerce|online store|online shop|shop online/.test(value) || /pay|checkout|accept payment|take payment/.test(value)) {
       return {
         text: `Yes — we can build a site people use to browse and order. ${BUSINESS.ecommerce}\n\nWould customers mainly WhatsApp you after they see the products, or do they need to pay on the site?`,
         handoff: false,
         qualify: false,
       };
     }
-    if (/for me$|build a website for me/.test(text.toLowerCase())) {
+    if (/can you (build|make)|do you (build|make) websites|build (a |me )?website|website for me/.test(value)) {
       return {
         text: withName(
           ctx,
-          "Yes. We build websites for businesses so customers can find you, see what you do, and get in touch.\n\nIs this for a business, and do you already have a site?",
+          "Yes. We build websites for businesses so customers can find you, see what you do, and get in touch — WhatsApp and a form included. Starter starts from ₦250,000.\n\nDo you already have a site, or is this new?",
         ),
         handoff: false,
         qualify: false,
@@ -340,13 +371,12 @@ export function fallbackAnswer(
     };
   }
 
-  const previous = lastAssistantText(history);
   if (previous && /how much\??$/i.test(text.trim())) {
     return fallbackAnswer("how much for that", { ...ctx, lastTopic: ctx.lastTopic || topic }, history);
   }
 
   return {
-    text: unknown("that"),
+    text: "I'm Ada from Zentra — I help with websites, WhatsApp automation, customer systems and custom software. Tell me what you need, or I can get someone from the team.",
     handoff: false,
     qualify: false,
   };

@@ -24,6 +24,7 @@ export type AdaIntent =
   | "hiring"
   | "eligibility"
   | "clarify_build"
+  | "identity"
   | "handoff"
   | "start_project"
   | "complaint"
@@ -97,13 +98,15 @@ const INTENT_HINTS: { intent: AdaIntent; pattern: RegExp }[] = [
     pattern:
       /\b(services|what do you (do|offer|build)|what (exactly )?do you guys do|what does zentra( actually)? do|kind of company|how can you help)\b/i,
   },
-  {
-    intent: "business_information",
-    pattern: /\b(what is zentra|about (zentra|your company|the company)|tell me about (zentra|your company|the company)|who (is|are) zentra|kind of business|who do you work with|small business)\b/i,
-  },
+  { intent: "business_information", pattern: /\b(what is zentra|about (zentra|your company|the company)|tell me about (zentra|your company|the company)|who (is|are) zentra|kind of business|who do you work with|small business)\b/i },
   { intent: "portfolio", pattern: /\b(portfolio|your work|case stud|projects you('ve| have)? (done|built))\b/i },
+  { intent: "identity", pattern: /\b(who are you|what('?s| is) your name|are you ada|are you a (bot|person|human|robot))\b/i },
   { intent: "greeting", pattern: /^(hi+|hii+|hello|hey+|yo|good (morning|afternoon|evening)|how far)[\s!.]*$/i },
 ];
+
+export function foldText(text: string) {
+  return text.replace(/[\u2018\u2019\u201B\uFF07]/g, "'").toLowerCase().trim();
+}
 
 export function lastAssistantText(history: { role: string; content: string }[]) {
   return [...history].reverse().find((item) => item.role === "assistant")?.content ?? "";
@@ -127,7 +130,7 @@ export function detectIntent(
   ctx: LeadContext,
   history: { role: string; content: string }[] = [],
 ): { intent: AdaIntent; topic?: string } {
-  const value = text.toLowerCase().trim();
+  const value = foldText(text);
   const short = SHORT_MESSAGE[value.replace(/[!?.]+$/g, "")];
   if (short) return { intent: short, topic: topicFromIntent(short) || topicFromText(value) };
 
