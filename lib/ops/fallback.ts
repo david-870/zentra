@@ -270,13 +270,13 @@ export function fallbackAnswer(
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Complete* — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
+        text: `Custom software is closer to *Premium* — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
         handoff: false,
         qualify: false,
       };
     }
     return {
-      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Standard* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Complete* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
+      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Standard* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Premium* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
       handoff: false,
       qualify: false,
     };
@@ -315,7 +315,7 @@ export function fallbackAnswer(
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Complete* — ${scalePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
+        text: `Custom software is closer to *Premium* — ${scalePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
         handoff: false,
         qualify: false,
       };

@@ -79,7 +79,7 @@ export function capabilityReply(id: CapabilityId): string {
     case "collect_info":
       return `Yes. A form on the site so enquiries are not lost in chat is part of how we usually set a site up — including Starter.\n\nWhat do you want to collect — name and WhatsApp, or more than that?`;
     case "login_portal":
-      return `Yes. A login, membership area or customer portal is a *web app* — people use it, they don't just read pages. That is closer to custom work (*Complete* is the starting point, from ₦1,500,000, confirmed after we talk).\n\nWho would log in — customers, staff, or both?`;
+      return `Yes. A login, membership area or customer portal is a *web app* — people use it, they don't just read pages. That is closer to custom work (*Premium* is the starting point, from ₦1,500,000, confirmed after we talk).\n\nWho would log in — customers, staff, or both?`;
     case "dashboard":
       return `Yes. Dashboards are something we build when the team needs to see jobs, orders or leads without chasing chats. That sits with a web app or custom software.\n\nWhat would you want to see on it?`;
     case "clone":
@@ -95,9 +95,9 @@ export function capabilityReply(id: CapabilityId): string {
     case "analytics":
       return `Yes. We can set the site up so you can see how people find you and what they do there. Standard includes that kind of setup.\n\nDo you already have Google Analytics, or would this be new?`;
     case "crm_connect":
-      return `Yes. A customer system can sit with the website or WhatsApp so a new enquiry lands in one list instead of a chat pile. Connecting tools you already use is typical of Complete-level work.\n\nWhat do you use for customers today — WhatsApp, a spreadsheet, or something else?`;
+      return `Yes. A customer system can sit with the website or WhatsApp so a new enquiry lands in one list instead of a chat pile. Connecting tools you already use is typical of Premium-level work.\n\nWhat do you use for customers today — WhatsApp, a spreadsheet, or something else?`;
     case "custom_system":
-      return `Yes, custom business software is something we can discuss. We don't guess the features — we look at the workflow, then build around it. Starting point is Complete, from ₦1,500,000, confirmed after a conversation.\n\nWhat are you currently using to manage that process, and what should the new system actually do?`;
+      return `Yes, custom business software is something we can discuss. We don't guess the features — we look at the workflow, then build around it. Starting point is Premium, from ₦1,500,000, confirmed after a conversation.\n\nWhat are you currently using to manage that process, and what should the new system actually do?`;
     case "mobile_native":
       return `Yes. We can discuss an Android app, an iPhone app, or both, and a website alongside if you need it. Mobile apps are custom work, scoped after we understand the job. We don't quote a single app price from a template.\n\nWho is the app for — customers, or the team?`;
     case "ai_replace":

@@ -60,7 +60,7 @@ function run() {
     {
       title: "Recommend something for me",
       text: "Recommend something for me",
-      expect: (text) => /starter|standard|complete/i.test(text) && /slowing/i.test(text),
+      expect: (text) => /starter|standard|premium/i.test(text) && /slowing/i.test(text),
     },
     {
       title: "Who founded Zentra?",

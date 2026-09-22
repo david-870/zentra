@@ -40,7 +40,7 @@ export const SERVICE_GUIDES: Record<
       "Custom software is for when ready-made tools don't match how you already work.",
       "That might be a system for jobs, stock, approvals, staff or clients — or connecting WhatsApp, records and a dashboard so you're not copying between apps. Sometimes it's a mobile app.",
       "We don't guess the features. We look at the workflow, then build around it. You get a clear scope, timeline and cost before anything is built.",
-      "This is closer to Complete — from ₦1,500,000, confirmed after we talk.",
+      "This is closer to Premium — from ₦1,500,000, confirmed after we talk.",
       "What does the team still do by hand that a system should be doing?",
     ].join("\n\n"),
   },

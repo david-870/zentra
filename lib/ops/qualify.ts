@@ -78,7 +78,10 @@ export function detectNeed(text: string): Partial<LeadContext> | null {
   ) {
     return { packageInterest: "growth", serviceInterest: "automation", source: sourceFrom(value) };
   }
-  if (/\b(scale|custom package|complete package)\b/.test(value) || /^(custom|complete)[\s!.]*$/i.test(value)) {
+  if (
+    /\b(scale|custom package|complete package|premium package)\b/.test(value) ||
+    /^(custom|complete|premium)[\s!.]*$/i.test(value)
+  ) {
     return { packageInterest: "scale", serviceInterest: "software", source: sourceFrom(value) };
   }
 
@@ -173,7 +176,7 @@ export function firstName(name?: string) {
 
 export function packageLabel(id?: string) {
   if (id === "starter") return "Starter";
-  if (id === "scale") return "Complete";
+  if (id === "scale") return "Premium";
   if (id === "growth") return "Standard";
   return id ?? "";
 }
@@ -189,7 +192,7 @@ export function recommendationCopy(id: string) {
     return "From what you've said, *Starter* feels like the right place to begin.\n\nThat's a professional site, a simple way for people to reach you, WhatsApp on the site, and a form so enquiries don't get lost.\n\n*From ₦250,000.*";
   }
   if (id === "scale") {
-    return "From what you've said, *Complete* looks like the better fit.\n\nThat's a setup built around how you already work — web app or software, automation, a customer system, and reporting.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
+    return "From what you've said, *Premium* looks like the better fit.\n\nThat's a setup built around how you already work — web app or software, automation, a customer system, and reporting.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
   }
   return "From what you've said, *Standard* looks like the right fit.\n\nThat's a proper website, plus help with enquiries, a simple customer list, and less repetitive work for the team.\n\n*From ₦650,000.*";
 }

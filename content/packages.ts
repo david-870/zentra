@@ -63,7 +63,7 @@ export const packages: Package[] = [
   },
   {
     id: "scale",
-    name: "Complete",
+    name: "Premium",
     audience: "For established businesses that need integrated or custom systems.",
     description: "Connect the way you already work, instead of stacking more disconnected tools.",
     price: "1,500,000",

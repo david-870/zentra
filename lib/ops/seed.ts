@@ -23,7 +23,7 @@ const packages = [
   },
   {
     id: "scale",
-    name: "Complete",
+    name: "Premium",
     description: "For established businesses that need integrated or custom systems.",
     priceLabel: "From ₦1,500,000. Scoped after a conversation.",
     features:
@@ -59,7 +59,7 @@ const knowledge = [
   {
     key: "pricing-policy",
     title: "Pricing policy",
-    body: "Only quote Starter ₦250,000, Standard ₦650,000, and Complete from ₦1,500,000. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.",
+    body: "Only quote Starter ₦250,000, Standard ₦650,000, and Premium from ₦1,500,000. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.",
   },
   {
     key: "handoff",

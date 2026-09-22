@@ -31,7 +31,7 @@ export const KNOWLEDGE: KnowledgeChunk[] = [
   },
   {
     id: "packages",
-    tags: ["package", "packages", "price", "pricing", "cost", "how", "much", "starter", "standard", "complete", "business", "custom", "growth", "scale", "naira"],
+    tags: ["package", "packages", "price", "pricing", "cost", "how", "much", "starter", "standard", "premium", "complete", "business", "custom", "growth", "scale", "naira"],
     answer: BUSINESS.packages.map((item) => `*${item.name}* — ${item.price}. ${item.description}`).join("\n"),
   },
   {
