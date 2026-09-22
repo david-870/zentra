@@ -63,6 +63,14 @@ export function fallbackAnswer(
     };
   }
 
+  if (/\bfrom the website|make inquir/i.test(value)) {
+    return {
+      text: "Welcome — I'm Ada from Zentra. I can help with websites, WhatsApp automation, customer systems and custom software.\n\nWhat's slowing the business down?",
+      handoff: false,
+      qualify: false,
+    };
+  }
+
   if (previous && /joining, freelancing, or partnering|joining or partnering/i.test(previous)) {
     if (/join|freelance|partner|team|job|career|intern/i.test(value)) {
       return { text: situationReply("career"), handoff: false, qualify: false };

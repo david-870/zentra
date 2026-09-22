@@ -58,6 +58,13 @@ export function isGreeting(text: string) {
   );
 }
 
+export function wantsAdaResume(text: string) {
+  if (isGreeting(text) || wantsRestart(text)) return true;
+  return /\b(from the website|make inquir|here to (ask|enquir)|i('?m| am) (here )?(from the website|to (ask|enquir)))/i.test(
+    text,
+  );
+}
+
 export function wantsRestart(text: string) {
   return /^(start(?: over)?|menu|restart)[\s!.]*$/i.test(text.trim());
 }

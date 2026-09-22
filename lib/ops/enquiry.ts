@@ -69,7 +69,7 @@ async function notifyOwnerWhatsApp(input: EnquiryInput) {
     input.website ? `Website: ${input.website}` : "Website: none",
   ].join("\n");
   try {
-    await sendOwnerPing(body);
+    await sendOwnerPing(body, input.phone);
   } catch (error) {
     const tail = opsConfig.ops.notifyPhone.replace(/\D/g, "").slice(-4);
     const detail = error instanceof Error ? error.message : "WhatsApp send failed";

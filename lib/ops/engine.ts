@@ -32,6 +32,7 @@ import {
   recommendPackage,
   recommendationCopy,
   scoreLead,
+  wantsAdaResume,
   wantsHandoff,
   wantsRestart,
   WELCOME,
@@ -94,6 +95,7 @@ async function handoff(conversation: ChatConversation, lead: { id: string; score
   await notifyOwner(
     "ZENTRA WHATSAPP — HUMAN NEEDED",
     [`Someone asked to talk to a person.`, `Phone: ${to}`, `Reason: ${reason.slice(0, 280)}`].join("\n"),
+    to,
   );
   await reply(
     conversation.id,
@@ -126,6 +128,7 @@ async function maybeNotifyQualified(
       `Package: ${ctx.packageInterest ?? "—"}`,
       `Phone: ${phone}`,
     ].join("\n"),
+    phone,
   );
 }
 
@@ -155,10 +158,11 @@ export async function processCustomerText(input: {
   if (!ctx.source) ctx.source = "whatsapp";
   if (input.profileName && !ctx.name) ctx.name = input.profileName;
 
-  if (wantsRestart(input.text)) {
-    await saveConversation(conversation.id, { control: "AI", stage: "welcome" });
+  if (wantsAdaResume(input.text)) {
+    const stage = isGreeting(input.text) || wantsRestart(input.text) ? "welcome" : "chat";
+    await saveConversation(conversation.id, { control: "AI", stage });
     conversation.control = "AI";
-    conversation.stage = "welcome";
+    conversation.stage = stage;
   }
 
   await writeLead(
@@ -173,6 +177,7 @@ export async function processCustomerText(input: {
     await notifyOwner(
       "ZENTRA WHATSAPP — NEW MESSAGE",
       [`Phone: ${phone}`, `Message: ${input.text.slice(0, 280)}`].join("\n"),
+      phone,
     );
     return { queued: true };
   }
@@ -186,6 +191,7 @@ export async function processCustomerText(input: {
     await notifyOwner(
       "ZENTRA WHATSAPP — NEEDS YOU",
       [`The assistant could not finish this chat.`, `Phone: ${phone}`].join("\n"),
+      phone,
     );
     return { failed: true };
   }
@@ -290,6 +296,7 @@ async function runStage(
     await notifyOwner(
       "ZENTRA WHATSAPP — HUMAN NEEDED",
       [`Phone: ${phone}`, `Reason: ${text.slice(0, 280)}`].join("\n"),
+      phone,
     );
     return { handoff: true };
   }
@@ -387,6 +394,7 @@ async function continueForm(
         `Budget: ${ctx.budgetRange ?? "—"}`,
         `Phone: ${phone}`,
       ].join("\n"),
+      phone,
     );
     await reply(
       conversation.id,
@@ -430,6 +438,7 @@ async function continueForm(
     await notifyOwner(
       "ZENTRA WHATSAPP — READY TO START",
       [`Name: ${ctx.name ?? "—"}`, `Business: ${ctx.businessName ?? "—"}`, `Phone: ${phone}`].join("\n"),
+      phone,
     );
     return { complete: true };
   }

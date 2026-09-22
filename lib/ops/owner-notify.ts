@@ -1,7 +1,7 @@
 import { sendOpsEmail } from "@/lib/ops/email";
 import { sendOwnerPing } from "@/lib/ops/whatsapp";
 
-export async function notifyOwner(title: string, body: string) {
+export async function notifyOwner(title: string, body: string, excludePhone?: string) {
   try {
     await sendOpsEmail(title, body);
   } catch (error) {
@@ -9,7 +9,7 @@ export async function notifyOwner(title: string, body: string) {
   }
 
   try {
-    await sendOwnerPing(`${title}\n${body}`.slice(0, 3500));
+    await sendOwnerPing(`${title}\n${body}`.slice(0, 3500), excludePhone);
   } catch (error) {
     console.error(error);
   }

@@ -48,6 +48,11 @@ function run() {
       expect: (text) => /ada/i.test(text) && /zentra/i.test(text) && !/don't have confirmed information about that/i.test(text),
     },
     {
+      title: "I'm from the website and here to make inquiries",
+      text: "I'm from the website and here to make inquiries",
+      expect: (text) => /ada/i.test(text) && !/zentra whatsapp — new message/i.test(text) && !/phone:/i.test(text),
+    },
+    {
       title: "Who founded Zentra?",
       text: "Who founded Zentra?",
       expect: (text) => /david/i.test(text),

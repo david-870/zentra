@@ -54,13 +54,24 @@ export async function sendWhatsAppText(to: string, body: string) {
   return graphSend({ to: normalizeWaPhone(to), type: "text", text: { body, preview_url: false } });
 }
 
-export async function sendOwnerPing(body: string) {
+export function sameWhatsAppNumber(a: string, b: string) {
+  const left = normalizeWaPhone(a);
+  const right = normalizeWaPhone(b);
+  if (!left || !right) return false;
+  return left === right || left.endsWith(right) || right.endsWith(left);
+}
+
+export async function sendOwnerPing(body: string, excludePhone?: string) {
   if (!whatsappConfigured()) {
     throw new Error("WhatsApp Cloud API token is not available to this deployment.");
   }
   const to = normalizeWaPhone(opsConfig.ops.notifyPhone);
   if (!to) {
     throw new Error("OPS_NOTIFY_PHONE is empty. Set it to your personal WhatsApp.");
+  }
+
+  if (excludePhone && sameWhatsAppNumber(to, excludePhone)) {
+    return "skipped" as const;
   }
 
   const from = await getWhatsAppDisplayPhone();
