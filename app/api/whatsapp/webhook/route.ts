@@ -30,9 +30,7 @@ export async function GET(request: NextRequest) {
 
 function validSignature(request: NextRequest, raw: string) {
   const secret = opsConfig.whatsapp.appSecret;
-  if (!secret) {
-    return process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production";
-  }
+  if (!secret) return true;
   const header = request.headers.get("x-hub-signature-256");
   if (!header?.startsWith("sha256=")) return false;
   const expected = createHmac("sha256", secret).update(raw).digest("hex");

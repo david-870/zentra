@@ -2,13 +2,11 @@ import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 import {
   markEnquiryEmailNotified,
-  markEnquiryNotified,
   persistWebsiteEnquiryPostgres,
 } from "@/lib/ops/enquiry-postgres";
 import { sendOpsEmail } from "@/lib/ops/email";
 import { notify } from "@/lib/ops/notify";
 import { ensureSeed } from "@/lib/ops/seed";
-import { sendOwnerPing } from "@/lib/ops/whatsapp";
 
 type EnquiryInput = {
   name: string;
@@ -58,25 +56,6 @@ async function persistWebsiteEnquiryLead(input: EnquiryInput) {
   return lead;
 }
 
-async function notifyOwnerWhatsApp(input: EnquiryInput) {
-  const body = [
-    "NEW ZENTRA ENQUIRY",
-    `Name: ${input.name}`,
-    `Business: ${input.business}`,
-    `Need: ${input.need}`,
-    `Phone: ${input.phone}`,
-    `Email: ${input.email}`,
-    input.website ? `Website: ${input.website}` : "Website: none",
-  ].join("\n");
-  try {
-    await sendOwnerPing(body, input.phone);
-  } catch (error) {
-    const tail = opsConfig.ops.notifyPhone.replace(/\D/g, "").slice(-4);
-    const detail = error instanceof Error ? error.message : "WhatsApp send failed";
-    throw new Error(`${detail} (pinged number ending ${tail || "????"})`);
-  }
-}
-
 async function notifyOwnerEmail(input: EnquiryInput, enquiryId: string | null) {
   const origin = opsConfig.appUrl.replace(/\/$/, "");
   const view = enquiryId ? `${origin}/ops/enquiries/${enquiryId}` : `${origin}/ops/enquiries`;
@@ -103,16 +82,6 @@ async function recordNotify(neonId: string | null, input: EnquiryInput) {
     console.error(error);
     if (neonId) {
       await markEnquiryEmailNotified(neonId, error instanceof Error ? error.message : "Email notify failed");
-    }
-  }
-
-  try {
-    await notifyOwnerWhatsApp(input);
-    if (neonId) await markEnquiryNotified(neonId);
-  } catch (error) {
-    console.error(error);
-    if (neonId) {
-      await markEnquiryNotified(neonId, error instanceof Error ? error.message : "WhatsApp notify failed");
     }
   }
 }
