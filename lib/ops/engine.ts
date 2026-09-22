@@ -400,7 +400,7 @@ async function continueForm(
       await reply(
         conversation.id,
         phone,
-        `${packageLabel(ctx.packageInterest) || "Business"} includes:\n${features
+        `${packageLabel(ctx.packageInterest) || "Standard"} includes:\n${features}
           .split("; ")
           .map((item) => `• ${item}`)
           .join("\n")}\n\nWant to start a project, or talk it through with the team?`,

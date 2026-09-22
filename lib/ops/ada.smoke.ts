@@ -60,7 +60,7 @@ function run() {
     {
       title: "Recommend something for me",
       text: "Recommend something for me",
-      expect: (text) => /starter|business|custom/i.test(text) && /slowing/i.test(text),
+      expect: (text) => /starter|standard|complete/i.test(text) && /slowing/i.test(text),
     },
     {
       title: "Who founded Zentra?",
@@ -115,7 +115,7 @@ function run() {
     {
       title: "How much does automation cost?",
       text: "How much does automation cost?",
-      expect: (text) => /650,000|business/i.test(text),
+      expect: (text) => /650,000|standard/i.test(text),
     },
     {
       title: "Can you give me a price?",

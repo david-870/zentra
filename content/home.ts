@@ -11,7 +11,7 @@ export const home = {
     eyebrow: "Solutions",
     headline: "Choose the system your business is ready for.",
     support:
-      "Starter if you need to be found. Business if enquiries are coming in but follow-up is messy. Custom if you need systems built around how you already work.",
+      "Starter if you need to be found. Standard if enquiries are coming in but follow-up is messy. Complete if you need systems built around how you already work.",
   },
   why: {
     eyebrow: "Who is Zentra",

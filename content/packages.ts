@@ -41,7 +41,7 @@ export const packages: Package[] = [
   },
   {
     id: "growth",
-    name: "Business",
+    name: "Standard",
     audience: "For businesses getting enquiries but struggling to manage leads and repetitive tasks.",
     description: "Keep up with messages, follow people up, and stop doing the same work by hand.",
     price: "650,000",
@@ -59,11 +59,11 @@ export const packages: Package[] = [
       "See how people find you and what they do on your site",
       "We launch it and show your team how to use it",
     ],
-    cta: "Choose Business",
+    cta: "Choose Standard",
   },
   {
     id: "scale",
-    name: "Custom",
+    name: "Complete",
     audience: "For established businesses that need integrated or custom systems.",
     description: "Connect the way you already work, instead of stacking more disconnected tools.",
     price: "1,500,000",

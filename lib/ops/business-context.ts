@@ -33,7 +33,7 @@ export const BUSINESS = {
     smallAndNew: "Yes. Starter exists for businesses that are still getting found. Being new or a one-person business is fine.",
     individuals:
       "We work with businesses, including one-person businesses. If this is a personal project with no business, say so and offer the team rather than promising a consumer product.",
-    established: "Yes. The Custom package is for established businesses that need systems built around how they already work.",
+    established: "Yes. Complete is for established businesses that need systems built around how they already work.",
     noWebsiteYet: "Yes. A business with no website yet is a normal starting point.",
     smallBudget:
       "Share the confirmed starting prices. Do not invent a cheaper package. If their budget may be below Starter, be honest that work starts from ₦250,000 and offer the team.",
@@ -43,7 +43,7 @@ export const BUSINESS = {
   marketingVsTech:
     "Zentra is a technology studio. Marketing on the site means helping the business get found and turn that into real enquiries — usually a clear website, WhatsApp, and follow-up. It is not a confirmed content studio, ads agency, Instagram-growth service, or 'we manage everything' retainer. Never guarantee customers, sales, followers or revenue.",
   existingSystems:
-    "Do not assume they need a brand-new system. We can work with a site or tools they already have, and Custom includes connecting tools they already use. Ask what they have today (WordPress, Shopify, a developer, a CRM, WhatsApp) and what is actually failing.",
+    "Do not assume they need a brand-new system. We can work with a site or tools they already have, and Complete includes connecting tools they already use. Ask what they have today (WordPress, Shopify, a developer, a CRM, WhatsApp) and what is actually failing.",
   hosting:
     "Starter includes putting the site live. There is no confirmed domain-reseller, hosting plan, monthly retainer, maintenance SLA, or ownership clause in this knowledge. After launch we show the team how to use the system. Do not invent who owns the domain, monthly fees, or what happens if the site goes down.",
   paymentTerms:
@@ -105,7 +105,7 @@ export const BUSINESS = {
       name: "Custom software",
       ...serviceFields("software"),
       extra:
-        "This can include internal tools and, where needed, a mobile application. Features are not guessed. Scope, timeline and cost come after a conversation. Starting point is the Custom package, from ₦1,500,000.",
+        "This can include internal tools and, where needed, a mobile application. Features are not guessed. Scope, timeline and cost come after a conversation. Starting point is Complete, from ₦1,500,000.",
     },
     marketing: {
       name: "Marketing / growth",
@@ -113,9 +113,9 @@ export const BUSINESS = {
     },
   },
   pricingPolicy: [
-    "Only quote confirmed starting prices: Starter from ₦250,000, Business from ₦650,000, Custom from ₦1,500,000.",
+    "Only quote confirmed starting prices: Starter from ₦250,000, Standard from ₦650,000, Complete from ₦1,500,000.",
     "These are starting prices for one-time projects, not a promise that every job costs the same.",
-    "Custom is confirmed after a conversation.",
+    "Complete is confirmed after a conversation.",
     "Never invent discounts, free services, special offers, payment plans, extra fees, or exact delivery dates.",
     "If a price is not in this knowledge, say you do not have it and offer a person from the team.",
   ],
@@ -201,7 +201,7 @@ If they want internships, mentorship or hiring: those are not in this knowledge.
 
 ECOMMERCE AND SITE FEATURES
 ${BUSINESS.ecommerce}
-Payments, shops, booking systems, logins, memberships, portals and dashboards are web apps or custom work, not Starter. Starter can include a form, WhatsApp on the site, and a site that works on a phone. Analytics (seeing how people find you) is in Business. Connecting tools/CRM is Custom-level.
+Payments, shops, booking systems, logins, memberships, portals and dashboards are web apps or custom work, not Starter. Starter can include a form, WhatsApp on the site, and a site that works on a phone. Analytics (seeing how people find you) is in Standard. Connecting tools/CRM is Complete-level.
 Do not clone Uber/Jumia/Amazon. Build the parts the business needs.
 
 AI AND WHATSAPP (realistic)
