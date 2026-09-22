@@ -83,7 +83,7 @@ const INTENT_HINTS: { intent: AdaIntent; pattern: RegExp }[] = [
   },
   { intent: "start_project", pattern: /\b(start (the |a )?project|i want to start|let's start|ready to (start|begin)|count me in)\b/i },
   { intent: "pricing", pattern: /\b(how much|price|pricing|cost|cheap|cheapest|budget|₦|naira)\b/i },
-  { intent: "packages", pattern: /\b(package|starter|growth|scale)\b/i },
+  { intent: "packages", pattern: /\b(package|starter|growth|scale|business package|custom package)\b/i },
   { intent: "process", pattern: /\b(how (do you|does (it|zentra)|una dey) work|process|steps|how you work)\b/i },
   { intent: "timeline", pattern: /\b(how long|timeline|how soon|when can|duration)\b/i },
   { intent: "existing_site", pattern: /\b(already (have|get|got) (a )?website|existing site|current site|old website|isn't generating)\b/i },
@@ -123,7 +123,7 @@ export function topicFromText(text: string): LeadContext["lastTopic"] {
   if (/\bcrm\b|customer system/.test(value)) return "crm";
   if (/software|mobile app|\bapp\b/.test(value)) return "software";
   if (/marketing/.test(value)) return "marketing";
-  if (/package|starter|growth|scale/.test(value)) return "packages";
+  if (/package|starter|growth|scale|business package|custom package/.test(value)) return "packages";
   return undefined;
 }
 

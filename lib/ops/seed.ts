@@ -14,7 +14,7 @@ const packages = [
   },
   {
     id: "growth",
-    name: "Growth",
+    name: "Business",
     description: "For businesses getting enquiries but struggling to manage leads and repetitive tasks.",
     priceLabel: "Starting from ₦650,000. One-time project.",
     features:
@@ -23,7 +23,7 @@ const packages = [
   },
   {
     id: "scale",
-    name: "Scale",
+    name: "Custom",
     description: "For established businesses that need integrated or custom systems.",
     priceLabel: "From ₦1,500,000. Scoped after a conversation.",
     features:
@@ -59,7 +59,7 @@ const knowledge = [
   {
     key: "pricing-policy",
     title: "Pricing policy",
-    body: "Only quote Starter ₦250,000, Growth ₦650,000, and Scale from ₦1,500,000. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.",
+    body: "Only quote Starter ₦250,000, Business ₦650,000, and Custom from ₦1,500,000. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.",
   },
   {
     key: "handoff",

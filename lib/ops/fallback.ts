@@ -256,27 +256,27 @@ export function fallbackAnswer(
     const focus = topic || ctx.lastTopic;
     if (focus === "website") {
       return {
-        text: `If you need to be found and give people a way to reach you, *Starter* is the usual starting point — ${starterPrice()}. If enquiries already come in but follow-up is messy, *Growth* — ${growthPrice()}.\n\nWhat's the actual problem — no site yet, or people find you and then it goes quiet?`,
+        text: `If you need to be found and give people a way to reach you, *Starter* is the usual starting point — ${starterPrice()}. If enquiries already come in but follow-up is messy, *Business* — ${growthPrice()}.\n\nWhat's the actual problem — no site yet, or people find you and then it goes quiet?`,
         handoff: false,
         qualify: false,
       };
     }
     if (focus === "automation" || focus === "whatsapp" || focus === "ai_assistant" || focus === "crm") {
       return {
-        text: `For messages, follow-up and less manual work, *Growth* is the usual starting point — ${growthPrice()}.\n\nWhat still has to be done by hand every day?`,
+        text: `For messages, follow-up and less manual work, *Business* is the usual starting point — ${growthPrice()}.\n\nWhat still has to be done by hand every day?`,
         handoff: false,
         qualify: false,
       };
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Scale* — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
+        text: `Custom software is closer to the *Custom* package — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
         handoff: false,
         qualify: false,
       };
     }
     return {
-      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Growth* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Scale* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
+      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Business* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Custom* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
       handoff: false,
       qualify: false,
     };
@@ -308,14 +308,14 @@ export function fallbackAnswer(
     }
     if (focus === "automation" || focus === "whatsapp" || focus === "ai_assistant" || focus === "crm") {
       return {
-        text: `When the job is messages, follow-up and less manual work, *Growth* is the usual starting point — ${growthPrice()}. That is a starting price. Custom automation is confirmed after we understand the workflow.\n\nWhat still has to be done by hand every day?`,
+        text: `When the job is messages, follow-up and less manual work, *Business* is the usual starting point — ${growthPrice()}. That is a starting price. Custom automation is confirmed after we understand the workflow.\n\nWhat still has to be done by hand every day?`,
         handoff: false,
         qualify: false,
       };
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Scale* — ${scalePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
+        text: `Custom software is closer to the *Custom* package — ${scalePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
         handoff: false,
         qualify: false,
       };

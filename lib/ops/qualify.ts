@@ -72,10 +72,12 @@ export function detectNeed(text: string): Partial<LeadContext> | null {
   const value = text.toLowerCase();
 
   if (/\bstarter\b/.test(value)) return { packageInterest: "starter", serviceInterest: "website", source: sourceFrom(value) };
-  if (/\bgrowth\b/.test(value) && !/marketing/.test(value)) {
+  if ((/\b(growth|business package)\b/.test(value) || /^business[\s!.]*$/i.test(value)) && !/marketing/.test(value)) {
     return { packageInterest: "growth", serviceInterest: "automation", source: sourceFrom(value) };
   }
-  if (/\bscale\b/.test(value)) return { packageInterest: "scale", serviceInterest: "software", source: sourceFrom(value) };
+  if (/\b(scale|custom package)\b/.test(value) || /^custom[\s!.]*$/i.test(value)) {
+    return { packageInterest: "scale", serviceInterest: "software", source: sourceFrom(value) };
+  }
 
   if (/\bwebsite\b|\bweb app|\bweb application|\blanding page/.test(value)) {
     return { serviceInterest: "website", source: sourceFrom(value) };
@@ -168,8 +170,8 @@ export function firstName(name?: string) {
 
 export function packageLabel(id?: string) {
   if (id === "starter") return "Starter";
-  if (id === "scale") return "Scale";
-  if (id === "growth") return "Growth";
+  if (id === "scale") return "Custom";
+  if (id === "growth") return "Business";
   return id ?? "";
 }
 
@@ -184,7 +186,7 @@ export function recommendationCopy(id: string) {
     return "From what you've said, *Starter* feels like the right place to begin.\n\nThat's a professional site, a simple way for people to reach you, WhatsApp on the site, and a form so enquiries don't get lost.\n\n*From ₦250,000.*";
   }
   if (id === "scale") {
-    return "From what you've said, *Scale* looks like the better fit.\n\nThat's a custom setup — web app or software, automation, a customer system, and reporting, built around how you already work.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
+    return "From what you've said, *Custom* looks like the better fit.\n\nThat's a custom setup — web app or software, automation, a customer system, and reporting, built around how you already work.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
   }
-  return "From what you've said, *Growth* looks like the right fit.\n\nThat's a proper website, plus help with enquiries, a simple customer list, and less repetitive work for the team.\n\n*From ₦650,000.*";
+  return "From what you've said, *Business* looks like the right fit.\n\nThat's a proper website, plus help with enquiries, a simple customer list, and less repetitive work for the team.\n\n*From ₦650,000.*";
 }

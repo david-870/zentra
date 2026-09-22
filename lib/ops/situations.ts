@@ -180,7 +180,7 @@ export function situationReply(id: SituationId): string {
     case "work_with_ambiguous":
       return `Just so I point you the right way — do you want Zentra to build something for a business, or are you asking about joining, freelancing, or partnering with the team?`;
     case "discount":
-      return `I don't have any discounts, free services or special offers in my notes, and I can't invent one. The published starting prices are Starter from ₦250,000, Growth from ₦650,000, Scale from ₦1,500,000.\n\nThe team can discuss your requirements and then give the right next step — a clear scope, timeline and cost.\n\nWhat are you looking to get done?`;
+      return `I don't have any discounts, free services or special offers in my notes, and I can't invent one. The published starting prices are Starter from ₦250,000, Business from ₦650,000, Custom from ₦1,500,000.\n\nThe team can discuss your requirements and then give the right next step — a clear scope, timeline and cost.\n\nWhat are you looking to get done?`;
     case "attachment":
       return `I can see you sent a file, but I can't inspect images or documents in this chat yet.\n\nTell me what you'd like the system to do, or describe the example you're referring to.`;
     case "location":
@@ -206,13 +206,13 @@ export function situationReply(id: SituationId): string {
     case "marketing_agency":
       return `Zentra is a technology studio. Marketing here means helping people find you and turn that into real enquiries — usually a clear website, WhatsApp, and follow-up. I don't have a confirmed content studio, ads-management, or Instagram-growth offer in my notes.\n\nWe don't guarantee a number of customers, sales or followers.\n\nIf the real issue is that people can't find you, can't reach you, or nobody follows up, that is the technology work we do.\n\nWhat's actually stuck — getting found, or keeping up once they message you?`;
     case "more_leads":
-      return `We can help the path that turns interest into real enquiries: a clear site, WhatsApp, and a way to follow up. We do not guarantee a number of leads, customers or sales.\n\nGrowth is the usual starting point for that kind of system — from ₦650,000, a one-time project, not a promise of X leads.\n\nWhere do enquiries die today — people don't find you, or they find you and nobody replies?`;
+      return `We can help the path that turns interest into real enquiries: a clear site, WhatsApp, and a way to follow up. We do not guarantee a number of leads, customers or sales.\n\nBusiness is the usual starting point for that kind of system — from ₦650,000, a one-time project, not a promise of X leads.\n\nWhere do enquiries die today — people don't find you, or they find you and nobody replies?`;
     case "manage_everything":
       return `We don't take over running the whole business. We build the website, automation or software, then launch it and show your team how to use it so you can run it.\n\nWhat do you most want off your plate — the website, the messages, or a system the team uses every day?`;
     case "marketing_price":
-      return `There isn't a confirmed ads or content-retainer price in my notes. Zentra's published prices are for technology projects: Starter from ₦250,000, Growth from ₦650,000, Scale from ₦1,500,000 — one-time, starting prices.\n\nIf you mean the system that captures enquiries and follow-up, Growth is the usual starting point. We don't guarantee a number of customers.\n\nAre you asking about ads/content, or about the website and WhatsApp side?`;
+      return `There isn't a confirmed ads or content-retainer price in my notes. Zentra's published prices are for technology projects: Starter from ₦250,000, Business from ₦650,000, Custom from ₦1,500,000 — one-time, starting prices.\n\nIf you mean the system that captures enquiries and follow-up, Business is the usual starting point. We don't guarantee a number of customers.\n\nAre you asking about ads/content, or about the website and WhatsApp side?`;
     case "existing_stack":
-      return `Yes — we don't have to start from zero. We can often work with what you already have, improve it, or connect it. Scale specifically includes connecting the tools you already use.\n\nWhat do you have in place now, and what is the actual problem — it doesn't convert, it doesn't connect, or it's too hard to run?`;
+      return `Yes — we don't have to start from zero. We can often work with what you already have, improve it, or connect it. Custom specifically includes connecting the tools you already use.\n\nWhat do you have in place now, and what is the actual problem — it doesn't convert, it doesn't connect, or it's too hard to run?`;
     case "hosting":
       return `We put the site live as part of the project. I don't have confirmed information about selling domain names, a hosting plan, or who legally owns the domain. I don't want to guess on that.\n\nI can connect you with the team for domain and hosting. For the build itself: after a short conversation you get a scope, timeline and cost.\n\nDo you already have a domain?`;
     case "maintenance":
