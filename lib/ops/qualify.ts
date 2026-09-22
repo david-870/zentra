@@ -30,7 +30,7 @@ export function wantsHandoff(text: string) {
 }
 
 export function isGreeting(text: string) {
-  return /^(h+|hi+|hii+|hello|hey+|yo|how far|good (?:morning|afternoon|evening))[\s!.]*$/i.test(
+  return /^(h+|hi+|hii+|hello|hey+|yo|how far|good (?:morning|afternoon|evening))(?:\s+there)?[\s!.]*$/i.test(
     text.trim(),
   );
 }

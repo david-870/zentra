@@ -37,7 +37,7 @@ import {
   WELCOME,
 } from "@/lib/ops/qualify";
 import { clipInbound, sanitizeCustomerReply } from "@/lib/ops/reply-guard";
-import { sendWhatsAppList, sendWhatsAppText, whatsappConfigured, normalizeWaPhone } from "@/lib/ops/whatsapp";
+import { sendWhatsAppText, normalizeWaPhone } from "@/lib/ops/whatsapp";
 
 const FORM_STAGES = new Set(["name", "business", "does", "problem", "context", "budget", "recommend"]);
 
@@ -247,29 +247,11 @@ async function runStage(
 
   mergeHints(ctx, text);
 
-  const fresh =
-    isGreeting(text) &&
-    (conversation.stage === "welcome" || conversation.stage === "need") &&
-    !ctx.serviceInterest &&
-    !ctx.problem &&
-    !ctx.businessDescription;
-
-  if (fresh || wantsRestart(text)) {
-    await reply(conversation.id, phone, WELCOME);
-    if (whatsappConfigured()) {
-      try {
-        await sendWhatsAppList(phone, "Or tap one and I'll explain it.", "Choose", [
-          { id: "website", title: "Website / Web App" },
-          { id: "automation", title: "AI & Automation" },
-          { id: "crm", title: "CRM / Customers" },
-          { id: "software", title: "Custom Software" },
-          { id: "marketing", title: "Marketing" },
-          { id: "packages", title: "See packages" },
-          { id: "human", title: "Talk to someone" },
-        ]);
-      } catch (error) {
-        console.error(error);
-      }
+  if (isGreeting(text) || wantsRestart(text)) {
+    const recent = await listRecentMessages(conversation.id, 4);
+    const last = lastAssistantText(recent);
+    if (!/1\. Website \/ web app/i.test(last)) {
+      await reply(conversation.id, phone, WELCOME);
     }
     await saveContext(conversation.id, ctx, "chat");
     await writeLead(contactId, conversation.id, phone, ctx, "NEW");

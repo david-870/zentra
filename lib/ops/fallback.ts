@@ -3,6 +3,7 @@ import { capabilityReply, detectCapability, nextTopicFor } from "@/lib/ops/capab
 import { detectIntent, foldText, lastAssistantText } from "@/lib/ops/intent";
 import type { LeadContext } from "@/lib/ops/qualify";
 import { detectSituation, situationHandoff, situationReply, situationTopic } from "@/lib/ops/situations";
+import { WELCOME } from "@/lib/ops/qualify";
 import { explainService } from "@/lib/ops/service-guide";
 
 function starterPrice() {
@@ -49,7 +50,7 @@ export function fallbackAnswer(
 
   if (intent === "greeting") {
     return {
-      text: "Hi — I'm Ada from Zentra. I can explain the work, talk through what's slowing the business down, or get someone from the team.\n\nWhat do you need help with?",
+      text: WELCOME,
       handoff: false,
       qualify: false,
     };
@@ -65,7 +66,7 @@ export function fallbackAnswer(
 
   if (/\bfrom the website|make inquir/i.test(value)) {
     return {
-      text: "Welcome — I'm Ada from Zentra. I can help with websites, WhatsApp automation, customer systems and custom software.\n\nWhat's slowing the business down?",
+      text: WELCOME,
       handoff: false,
       qualify: false,
     };
@@ -251,6 +252,36 @@ export function fallbackAnswer(
     };
   }
 
+  if (intent === "recommend") {
+    const focus = topic || ctx.lastTopic;
+    if (focus === "website") {
+      return {
+        text: `If you need to be found and give people a way to reach you, *Starter* is the usual starting point — ${starterPrice()}. If enquiries already come in but follow-up is messy, *Growth* — ${growthPrice()}.\n\nWhat's the actual problem — no site yet, or people find you and then it goes quiet?`,
+        handoff: false,
+        qualify: false,
+      };
+    }
+    if (focus === "automation" || focus === "whatsapp" || focus === "ai_assistant" || focus === "crm") {
+      return {
+        text: `For messages, follow-up and less manual work, *Growth* is the usual starting point — ${growthPrice()}.\n\nWhat still has to be done by hand every day?`,
+        handoff: false,
+        qualify: false,
+      };
+    }
+    if (focus === "software") {
+      return {
+        text: `Custom software is closer to *Scale* — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
+        handoff: false,
+        qualify: false,
+      };
+    }
+    return {
+      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Growth* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Scale* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
+      handoff: false,
+      qualify: false,
+    };
+  }
+
   if (intent === "packages") {
     return {
       text: `Three starting points:\n\n${packagesBlurb()}\n\nWhich feels closest, or tell me the problem you're trying to fix?`,
@@ -384,7 +415,7 @@ export function fallbackAnswer(
   }
 
   return {
-    text: "I'm Ada from Zentra — I help with websites, WhatsApp automation, customer systems and custom software. Tell me what you need, or I can get someone from the team.",
+    text: "I didn't catch that clearly. We help with websites, WhatsApp automation, customer systems, custom software, and marketing.\n\nWhat do you want help with — or pick a number:\n1. Website / web app\n2. Automation\n3. CRM / customers\n4. Custom software\n5. Marketing\n6. See packages\n7. Talk to someone",
     handoff: false,
     qualify: false,
   };

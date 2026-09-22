@@ -40,7 +40,7 @@ function run() {
     {
       title: "Hi",
       text: "Hi",
-      expect: (text) => /ada/i.test(text) && !/don't have confirmed information about that/i.test(text),
+      expect: (text) => /ada/i.test(text) && /1\. Website/i.test(text) && /automation/i.test(text),
     },
     {
       title: "Who are you",
@@ -50,7 +50,17 @@ function run() {
     {
       title: "I'm from the website and here to make inquiries",
       text: "I'm from the website and here to make inquiries",
-      expect: (text) => /ada/i.test(text) && !/zentra whatsapp — new message/i.test(text) && !/phone:/i.test(text),
+      expect: (text) => /ada/i.test(text) && /1\. Website/i.test(text) && !/zentra whatsapp — new message/i.test(text) && !/phone:/i.test(text),
+    },
+    {
+      title: "I want to know about your agency",
+      text: "I want to know about your agency",
+      expect: (text) => /website|automation|software/i.test(text) && !/tell me what you need, or i can get someone/i.test(text),
+    },
+    {
+      title: "Recommend something for me",
+      text: "Recommend something for me",
+      expect: (text) => /starter|growth|scale/i.test(text) && /slowing/i.test(text),
     },
     {
       title: "Who founded Zentra?",

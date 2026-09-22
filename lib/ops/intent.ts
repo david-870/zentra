@@ -25,6 +25,7 @@ export type AdaIntent =
   | "eligibility"
   | "clarify_build"
   | "identity"
+  | "recommend"
   | "handoff"
   | "start_project"
   | "complaint"
@@ -98,10 +99,11 @@ const INTENT_HINTS: { intent: AdaIntent; pattern: RegExp }[] = [
     pattern:
       /\b(services|what do you (do|offer|build)|what (exactly )?do you guys do|what does zentra( actually)? do|kind of company|how can you help)\b/i,
   },
-  { intent: "business_information", pattern: /\b(what is zentra|about (zentra|your company|the company)|tell me about (zentra|your company|the company)|who (is|are) zentra|kind of business|who do you work with|small business)\b/i },
+  { intent: "business_information", pattern: /\b(what is zentra|about (zentra|your company|the company|your agency|the agency)|tell me (more )?about (zentra|your company|the company|your agency)|who (is|are) zentra|kind of business|who do you work with|small business|know about (your )?(agency|zentra|company)|your agency)\b/i },
+  { intent: "recommend", pattern: /\b(recommend|suggest|what should i (get|choose|pick|go for)|which package|best (for me|option)|help me choose)\b/i },
   { intent: "portfolio", pattern: /\b(portfolio|your work|case stud|projects you('ve| have)? (done|built))\b/i },
   { intent: "identity", pattern: /\b(who are you|what('?s| is) your name|are you ada|are you a (bot|person|human|robot))\b/i },
-  { intent: "greeting", pattern: /^(hi+|hii+|hello|hey+|yo|good (morning|afternoon|evening)|how far)[\s!.]*$/i },
+  { intent: "greeting", pattern: /^(h+|hi+|hii+|hello|hey+|yo|good (morning|afternoon|evening)|how far)(?:\s+there)?[\s!.]*$/i },
 ];
 
 export function foldText(text: string) {

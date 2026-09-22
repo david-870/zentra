@@ -28,5 +28,8 @@ export function safeChatHistory(history: { role: "user" | "assistant"; content: 
 }
 
 export function isWeakFallback(text: string) {
-  return /tell me what you need, or i can get someone from the team/i.test(text);
+  return (
+    /tell me what you need, or i can get someone from the team/i.test(text) ||
+    /i didn't catch that clearly/i.test(text)
+  );
 }
