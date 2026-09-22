@@ -8,30 +8,38 @@ function includeAiEnv() {
 
 export async function completeChat(messages: ChatTurn[]) {
   const apiKey = includeAiEnv() || opsConfig.ai.apiKey;
-  const baseUrl = opsConfig.ai.baseUrl;
+  const baseUrl = opsConfig.ai.baseUrl.replace(/\/$/, "");
   const model = opsConfig.ai.model;
-  if (!apiKey) return null;
+  if (!apiKey || !baseUrl.startsWith("https://")) return null;
 
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      temperature: 0.7,
-      max_tokens: 900,
-      messages,
-    }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
 
-  if (!response.ok) {
-    throw new Error(`AI provider error ${response.status}`);
+  try {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model,
+        temperature: 0.4,
+        max_tokens: 400,
+        messages,
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = (await response.json()) as {
+      choices?: { message?: { content?: string } }[];
+    };
+    return data.choices?.[0]?.message?.content?.trim() || null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const data = (await response.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  return data.choices?.[0]?.message?.content?.trim() || null;
 }

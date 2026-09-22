@@ -9,18 +9,9 @@ import { parseIncoming } from "@/lib/ops/whatsapp";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-function includeWebhookEnv() {
-  return {
-    WHATSAPP_VERIFY_TOKEN: Boolean(String(process.env.WHATSAPP_VERIFY_TOKEN ?? "").trim()),
-    WHATSAPP_APP_SECRET: Boolean(String(process.env.WHATSAPP_APP_SECRET ?? "").trim()),
-    WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
-    WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
-    AI_API_KEY: Boolean(String(process.env.AI_API_KEY ?? "").trim()),
-  };
-}
+const MAX_BODY = 200_000;
 
 export async function GET(request: NextRequest) {
-  includeWebhookEnv();
   const mode = request.nextUrl.searchParams.get("hub.mode");
   const token = request.nextUrl.searchParams.get("hub.verify_token")?.trim() ?? "";
   const challenge = request.nextUrl.searchParams.get("hub.challenge");
@@ -39,7 +30,9 @@ export async function GET(request: NextRequest) {
 
 function validSignature(request: NextRequest, raw: string) {
   const secret = opsConfig.whatsapp.appSecret;
-  if (!secret) return true;
+  if (!secret) {
+    return process.env.VERCEL !== "1" && process.env.NODE_ENV !== "production";
+  }
   const header = request.headers.get("x-hub-signature-256");
   if (!header?.startsWith("sha256=")) return false;
   const expected = createHmac("sha256", secret).update(raw).digest("hex");
@@ -50,13 +43,15 @@ function validSignature(request: NextRequest, raw: string) {
 }
 
 export async function POST(request: NextRequest) {
-  includeWebhookEnv();
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!rateLimit(`wa:${ip}`, 120, 60_000)) {
-    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  if (!rateLimit(`wa:${ip}`, 80, 60_000)) {
+    return NextResponse.json({ ok: true, throttled: true });
   }
 
   const raw = await request.text();
+  if (raw.length > MAX_BODY) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
   if (!validSignature(request, raw)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
@@ -71,6 +66,10 @@ export async function POST(request: NextRequest) {
   const incoming = parseIncoming(payload);
   if (!incoming) {
     return NextResponse.json({ ok: true, ignored: true });
+  }
+
+  if (!rateLimit(`wa-phone:${incoming.from}`, 25, 60_000)) {
+    return NextResponse.json({ ok: true, throttled: true });
   }
 
   if (!chatStoreReady()) {

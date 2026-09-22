@@ -19,38 +19,15 @@ export const WELCOME = [
   "1. Website / web app\n2. Automation\n3. CRM / customers\n4. Custom software\n5. Marketing\n6. See packages\n7. Talk to someone",
 ].join("\n\n");
 
-const HANDOFF_PHRASES = [
-  "talk to a human",
-  "talk to someone",
-  "talk to human",
-  "speak with someone",
-  "speak to someone",
-  "speak with the",
-  "speak to the",
-  "speak with david",
-  "speak to david",
-  "talk to david",
-  "talk to the founder",
-  "speak to the founder",
-  "speak with the founder",
-  "talk to the owner",
-  "talk to the developer",
-  "speak to the developer",
-  "can i speak",
-  "can i talk",
-  "want to talk",
-  "real person",
-  "talk to your team",
-  "speak to your team",
-  "speak with your team",
-  "question for your team",
-  "someone from the team",
-  "connect me to someone",
-  "please connect me",
-  "can someone call me",
-  "please call me",
-  "call me back",
-];
+export function wantsHandoff(text: string) {
+  const value = text.toLowerCase().trim();
+  if (/^7\b/.test(value)) return true;
+  return (
+    /\b((speak|talk) (to|with) (someone|a person|a human|the team|the founder|the owner|the developer|david)|real person|human agent|i want a human|connect me to someone|please connect me|someone from the team|can someone call me|please call me|call me back)\b/i.test(
+      value,
+    )
+  );
+}
 
 export function isGreeting(text: string) {
   return /^(hi+|hii+|hello|hey+|yo|how far|good (?:morning|afternoon|evening))[\s!.]*$/i.test(
@@ -89,12 +66,6 @@ export function extractLeadHints(text: string, ctx: LeadContext): Partial<LeadCo
   if (problem && !ctx.problem) updates.problem = problem[1].trim();
 
   return updates;
-}
-
-export function wantsHandoff(text: string) {
-  const value = text.toLowerCase().trim();
-  if (/^7\b/.test(value)) return true;
-  return HANDOFF_PHRASES.some((phrase) => value.includes(phrase));
 }
 
 export function detectNeed(text: string): Partial<LeadContext> | null {

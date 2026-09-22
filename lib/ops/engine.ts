@@ -10,7 +10,6 @@ import {
   getLeadByConversation,
   getOrCreateConversation,
   listRecentMessages,
-  messageExists,
   PACKAGE_FEATURES,
   saveConversation,
   scheduleFollowUps,
@@ -18,7 +17,7 @@ import {
   upsertLead,
   type ChatConversation,
 } from "@/lib/ops/chat-store";
-import { numberedService, topicFromText } from "@/lib/ops/intent";
+import { numberedService, topicFromText, lastAssistantText } from "@/lib/ops/intent";
 import { notifyOwner } from "@/lib/ops/owner-notify";
 import {
   extraQuestion,
@@ -37,6 +36,7 @@ import {
   wantsRestart,
   WELCOME,
 } from "@/lib/ops/qualify";
+import { clipInbound, sanitizeCustomerReply } from "@/lib/ops/reply-guard";
 import { sendWhatsAppList, sendWhatsAppText, whatsappConfigured, normalizeWaPhone } from "@/lib/ops/whatsapp";
 
 const FORM_STAGES = new Set(["name", "business", "does", "problem", "context", "budget", "recommend"]);
@@ -50,12 +50,13 @@ function readContext(raw: string): LeadContext {
 }
 
 async function reply(conversationId: string, to: string, text: string) {
-  const sent = await sendWhatsAppText(to, text);
+  const body = sanitizeCustomerReply(text);
+  const sent = await sendWhatsAppText(to, body);
   await addMessage(conversationId, {
     waMessageId: sent.id,
     direction: "OUT",
     author: "AI",
-    text,
+    text: body,
   });
 }
 
@@ -141,8 +142,7 @@ export async function processCustomerText(input: {
 }) {
   const phone = normalizeWaPhone(input.phone);
   const waId = normalizeWaPhone(input.waId);
-
-  if (await messageExists(input.waMessageId)) return { duplicate: true };
+  const text = clipInbound(input.text);
 
   const contactId = await upsertContact(waId, phone, input.profileName);
   const conversation = await getOrCreateConversation(contactId);
@@ -151,39 +151,34 @@ export async function processCustomerText(input: {
     waMessageId: input.waMessageId,
     direction: "IN",
     author: "CUSTOMER",
-    text: input.text,
+    text,
   });
 
   const ctx = readContext(conversation.contextJson);
   if (!ctx.source) ctx.source = "whatsapp";
-  if (input.profileName && !ctx.name) ctx.name = input.profileName;
+  if (input.profileName && !ctx.name && looksLikePersonName(input.profileName)) {
+    ctx.name = input.profileName;
+  }
 
-  if (wantsAdaResume(input.text)) {
-    const stage = isGreeting(input.text) || wantsRestart(input.text) ? "welcome" : "chat";
+  if (wantsAdaResume(text)) {
+    const stage = isGreeting(text) || wantsRestart(text) ? "welcome" : "chat";
     await saveConversation(conversation.id, { control: "AI", stage });
     conversation.control = "AI";
     conversation.stage = stage;
   }
 
-  await writeLead(
-    contactId,
-    conversation.id,
-    phone,
-    ctx,
-    conversation.control === "HUMAN" ? "HUMAN_HANDOFF" : conversation.stage === "welcome" ? "NEW" : "QUALIFYING",
-  );
-
   if (conversation.control === "HUMAN") {
+    await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
     await notifyOwner(
       "ZENTRA WHATSAPP — NEW MESSAGE",
-      [`Phone: ${phone}`, `Message: ${input.text.slice(0, 280)}`].join("\n"),
+      [`Phone: ${phone}`, `Message: ${text.slice(0, 280)}`].join("\n"),
       phone,
     );
     return { queued: true };
   }
 
   try {
-    return await runStage(conversation, contactId, phone, input.text, ctx);
+    return await runStage(conversation, contactId, phone, text, ctx);
   } catch (error) {
     console.error(error);
     await saveConversation(conversation.id, { control: "HUMAN", stage: "handoff", handoff: true });
@@ -214,12 +209,19 @@ function mergeHints(ctx: LeadContext, text: string) {
   if (topic) ctx.lastTopic = topic;
 }
 
-function looksLikeFormAnswer(stage: string, text: string) {
+function looksLikeFormAnswer(stage: string, text: string, lastAssistant: string) {
   if (!FORM_STAGES.has(stage)) return false;
   if (isConversational(text) || text.includes("?")) return false;
-  if (isNumberedChoice(text) && (stage === "budget" || stage === "recommend")) return true;
-  if (stage === "name") return looksLikePersonName(text);
   if (wantsHandoff(text)) return false;
+  if (stage === "name") {
+    if (!/call you|your name|nice to meet you/i.test(lastAssistant)) return false;
+    return looksLikePersonName(text);
+  }
+  if (stage === "business" && !/business called/i.test(lastAssistant)) return false;
+  if (stage === "does" && !/what do you do there/i.test(lastAssistant)) return false;
+  if (stage === "problem" && !/slowing you down/i.test(lastAssistant)) return false;
+  if (stage === "budget") return isNumberedChoice(text) && /^[1-5]\b/.test(text.trim());
+  if (stage === "recommend") return /^[1-3]\b/.test(text.trim());
   return text.trim().split(/\s+/).length <= 12;
 }
 
@@ -274,11 +276,11 @@ async function runStage(
     return { stage: "chat" };
   }
 
-  if (looksLikeFormAnswer(conversation.stage, text)) {
+  const history = await listRecentMessages(conversation.id, 8);
+  if (looksLikeFormAnswer(conversation.stage, text, lastAssistantText(history))) {
     return continueForm(conversation, contactId, phone, text, ctx);
   }
 
-  const history = await listRecentMessages(conversation.id);
   const answer = await answerClient({
     text,
     stage: conversation.stage === "welcome" || conversation.stage === "need" ? "chat" : conversation.stage,
@@ -287,7 +289,7 @@ async function runStage(
   });
 
   if (answer.lastTopic) ctx.lastTopic = answer.lastTopic;
-  const stage = answer.qualify ? (ctx.name ? "chat" : "name") : conversation.stage === "welcome" ? "chat" : conversation.stage || "chat";
+  const stage = FORM_STAGES.has(conversation.stage) && conversation.stage !== "recommend" ? "chat" : conversation.stage === "welcome" || conversation.stage === "need" ? "chat" : conversation.stage || "chat";
 
   if (answer.handoff) {
     await reply(conversation.id, phone, answer.text);
@@ -405,13 +407,13 @@ async function continueForm(
   }
 
   if (stage === "recommend") {
-    const value = text.toLowerCase();
-    if (/2|speak|human|team/.test(value)) {
+    const value = text.trim();
+    if (/^2\b/.test(value) || wantsHandoff(text)) {
       const lead = await writeLead(contactId, conversation.id, phone, ctx, "HUMAN_HANDOFF");
       await handoff(conversation, lead, phone, text);
       return { handoff: true };
     }
-    if (/3|included|what's in/.test(value)) {
+    if (/^3\b/.test(value) || /included|what's in|whats in/i.test(value)) {
       const features = PACKAGE_FEATURES[ctx.packageInterest ?? "growth"] ?? PACKAGE_FEATURES.growth;
       await reply(
         conversation.id,

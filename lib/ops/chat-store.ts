@@ -36,9 +36,12 @@ function sql() {
   return postgresClient();
 }
 
+let tablesReady: ReturnType<typeof postgresClient> | null | undefined;
+
 async function ensureChatTables() {
   const client = sql();
   if (!client) throw new Error("Postgres is not configured for WhatsApp chats.");
+  if (tablesReady) return tablesReady;
   await client`
     CREATE TABLE IF NOT EXISTS wa_processed_events (
       id text PRIMARY KEY,
@@ -110,6 +113,7 @@ async function ensureChatTables() {
       created_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+  tablesReady = client;
   return client;
 }
 
@@ -344,21 +348,21 @@ export async function listChatLeads(): Promise<ChatLead[]> {
   }));
 }
 
-export async function listRecentMessages(conversationId: string, limit = 16) {
+export async function listRecentMessages(conversationId: string, limit = 8) {
   const client = await ensureChatTables();
   const rows = (await client`
     SELECT direction, text
     FROM wa_messages
     WHERE conversation_id = ${conversationId}
     ORDER BY created_at DESC
-    LIMIT 16
+    LIMIT 8
   `) as { direction?: string; text?: string }[];
   return [...rows]
     .reverse()
     .slice(-limit)
     .map((row) => ({
       role: String(row.direction) === "IN" ? ("user" as const) : ("assistant" as const),
-      content: String(row.text ?? ""),
+      content: String(row.text ?? "").slice(0, 800),
     }));
 }
 
