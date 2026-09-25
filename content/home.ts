@@ -2,7 +2,7 @@ export const home = {
   hero: {
     headline: ["Build.", "Automate.", "Grow."],
     support:
-      "Make your business easier to run — and easier to grow.",
+      "Make your business easier to find, simpler to run, and faster to grow.",
     line: "Websites · Automation · CRM · Custom Software",
     primary: { label: "Get Started", href: "/#contact" },
     secondary: { label: "See packages", href: "/#solutions" },
