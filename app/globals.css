@@ -22,6 +22,14 @@ html {
   scroll-behavior: smooth;
   background: #000000;
   color: var(--color-text);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 639px) {
+  html {
+    font-size: 18px;
+  }
 }
 
 body {
