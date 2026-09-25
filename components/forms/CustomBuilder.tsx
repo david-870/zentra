@@ -37,16 +37,16 @@ export function CustomBuilder() {
                 aria-pressed={checked}
                 onClick={() => toggle(service.id)}
                 className={cn(
-                  "flex min-h-12 items-center gap-3 border px-3 py-3 text-left text-sm transition-colors duration-200 sm:px-4",
+                  "font-ui flex min-h-11 items-center gap-3 rounded-lg border px-3 py-3 text-left text-sm transition-colors duration-200 sm:px-4",
                   checked
-                    ? "border-text bg-raised text-text"
-                    : "border-line text-muted hover:border-muted hover:text-text",
+                    ? "border-line bg-elevated text-text"
+                    : "border-line bg-bg text-muted hover:text-text",
                 )}
               >
                 <span
                   className={cn(
-                    "size-3.5 shrink-0 border",
-                    checked ? "border-text bg-text" : "border-muted",
+                    "size-3.5 shrink-0 rounded-[4px] border",
+                    checked ? "border-text bg-text" : "border-ash",
                   )}
                   aria-hidden="true"
                 />
@@ -62,7 +62,7 @@ export function CustomBuilder() {
           href={labels.length > 0 ? customWhatsappHref(labels) : "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-12 w-full items-center justify-center bg-white px-6 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text sm:w-auto"
+          className="font-ui inline-flex h-11 w-full items-center justify-center rounded-lg bg-text px-4 text-sm font-medium text-black transition-colors hover:bg-[#f1f7fe] sm:h-9 sm:w-auto"
           onClick={(event) => {
             if (labels.length === 0) {
               event.preventDefault();
@@ -73,7 +73,7 @@ export function CustomBuilder() {
           {home.custom.cta} →
         </a>
         {error ? (
-          <p className="text-sm text-muted" role="alert">
+          <p className="text-sm text-error" role="alert">
             {error}
           </p>
         ) : null}

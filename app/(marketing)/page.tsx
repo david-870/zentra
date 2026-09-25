@@ -10,14 +10,12 @@ export default function HomePage() {
   return (
     <main id="main">
       <Hero />
-      <div className="relative z-10 bg-bg">
-        <Packages />
-        <Work />
-        <About />
-        <Custom />
-        <Process />
-        <FinalCta />
-      </div>
+      <Packages />
+      <Work />
+      <About />
+      <Custom />
+      <Process />
+      <FinalCta />
     </main>
   );
 }

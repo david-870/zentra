@@ -22,7 +22,7 @@ export function Logo({
   wordClassName?: string;
 }) {
   return (
-    <span className={cn("font-display inline-flex max-w-full items-center text-[1.2rem] leading-none", className)}>
+    <span className={cn("font-ui inline-flex max-w-full items-center text-[1.2rem] font-medium leading-none tracking-tight", className)}>
       <LogoMark className={markClassName} />
       <span className={cn("-ml-[0.06em]", wordClassName)}>entra</span>
     </span>

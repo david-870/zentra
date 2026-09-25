@@ -10,13 +10,13 @@ type ButtonProps = {
 
 export function Button({ href, children, variant = "primary", className }: ButtonProps) {
   const styles = {
-    primary: "bg-white text-black hover:bg-text",
-    secondary: "border border-line text-text hover:border-text",
-    ghost: "text-text underline decoration-line underline-offset-4 hover:decoration-text",
+    primary: "bg-text text-black hover:bg-[#f1f7fe]",
+    secondary: "border border-line bg-elevated text-text hover:border-text",
+    ghost: "border border-line bg-bg text-text hover:bg-elevated",
   } as const;
 
   const classNames = cn(
-    "inline-flex min-h-11 items-center justify-center px-5 text-[0.8125rem] font-medium tracking-[0.06em] uppercase transition-colors duration-200",
+    "font-ui inline-flex h-11 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors duration-200 sm:h-9",
     styles[variant],
     className,
   );

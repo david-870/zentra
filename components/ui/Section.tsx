@@ -10,8 +10,12 @@ export function Section({
   className?: string;
 }) {
   return (
-    <section id={id} className={cn("scroll-mt-24 py-14 sm:py-24 lg:py-28", className)}>
-      {children}
+    <section id={id} className={cn("relative scroll-mt-16 overflow-hidden py-16 sm:py-24", className)}>
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] bg-[radial-gradient(ellipse_at_top,rgba(0,117,255,0.22),transparent_62%)]"
+      />
+      <div className="relative">{children}</div>
     </section>
   );
 }

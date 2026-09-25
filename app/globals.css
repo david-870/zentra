@@ -1,35 +1,44 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-bg: #0b0b0a;
-  --color-raised: #131312;
-  --color-text: #f3f1ea;
-  --color-muted: #8c887f;
-  --color-line: #2a2926;
-  --color-accent: #f3f1ea;
+  --color-bg: #000000;
+  --color-raised: #0a0a0c;
+  --color-elevated: #101012;
+  --color-deep: #06060a;
+  --color-text: #fcfdff;
+  --color-muted: rgba(252, 253, 255, 0.7);
+  --color-ash: #888e90;
+  --color-line: rgba(255, 255, 255, 0.14);
+  --color-hairline: rgba(255, 255, 255, 0.06);
+  --color-link: #3b9eff;
+  --color-success: #11ff99;
+  --color-error: #ff2047;
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
+  --font-ui: var(--font-ui);
 }
 
 html {
   scroll-behavior: smooth;
-  background: var(--color-bg);
+  background: #000000;
   color: var(--color-text);
 }
 
 body {
-  background: var(--color-bg);
+  background: #000000;
   color: var(--color-text);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 1.0625rem;
-  line-height: 1.55;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 ::selection {
   background: var(--color-text);
-  color: var(--color-bg);
+  color: #000000;
 }
 
 :focus-visible {
@@ -38,9 +47,17 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  letter-spacing: -0.045em;
-  line-height: 0.95;
+  font-family: var(--font-display), "Iowan Old Style", "Palatino Linotype", Palatino, serif;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  font-feature-settings: "ss01", "liga";
+}
+
+.font-ui {
+  font-family: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: normal;
+  letter-spacing: 0;
 }
 
 .rise {
@@ -66,12 +83,30 @@ body {
   }
 }
 
+.glow-drift {
+  background: radial-gradient(ellipse at top, rgba(0, 117, 255, 0.22), transparent 62%);
+  animation: glow-drift 16s ease-in-out infinite;
+}
+
+@keyframes glow-drift {
+  0% {
+    transform: translate3d(-6%, 0, 0);
+  }
+  50% {
+    transform: translate3d(6%, 4%, 0);
+  }
+  100% {
+    transform: translate3d(-6%, 0, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
 
-  .rise {
+  .rise,
+  .glow-drift {
     animation: none !important;
   }
 }

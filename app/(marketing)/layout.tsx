@@ -1,4 +1,5 @@
 import { Analytics } from "@/components/layout/Analytics";
+import { CursorLight } from "@/components/layout/CursorLight";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloat } from "@/components/layout/WhatsAppFloat";
@@ -12,6 +13,7 @@ export default function MarketingLayout({ children }: { children: React.ReactNod
       >
         Skip to content
       </a>
+      <CursorLight />
       <Header />
       {children}
       <Footer />

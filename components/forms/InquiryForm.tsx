@@ -22,8 +22,8 @@ export function InquiryForm() {
 
   if (status === "success") {
     return (
-      <div className="border border-line bg-raised p-8" role="status">
-        <p className="font-display text-2xl">We have the enquiry.</p>
+      <div className="rounded-xl border border-line bg-raised p-8" role="status">
+        <p className="font-ui text-2xl font-medium tracking-tight">We have the enquiry.</p>
         <p className="mt-3 text-muted">
           We will review it and come back with a next step. If you need to talk now, WhatsApp is still open.
         </p>
@@ -31,7 +31,7 @@ export function InquiryForm() {
           href={whatsappHref()}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-6 inline-flex min-h-11 items-center justify-center border border-line px-5 text-[0.8125rem] font-medium tracking-[0.06em] uppercase"
+          className="font-ui mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-line bg-elevated px-4 text-sm font-medium sm:h-9"
         >
           WhatsApp
         </a>
@@ -89,25 +89,25 @@ export function InquiryForm() {
   }
 
   const field =
-    "mt-2 w-full border border-line bg-bg px-3 py-3 text-sm text-text outline-none transition-colors focus:border-text";
+    "font-ui mt-2 h-11 w-full rounded-lg border border-line bg-raised px-3.5 text-sm text-text outline-none transition-colors focus:border-text";
 
   return (
     <form onSubmit={onSubmit} className="relative grid gap-5" noValidate>
-      <p className="text-[0.7rem] tracking-[0.18em] text-muted uppercase">Or send an enquiry</p>
+      <p className="font-ui text-sm text-ash">Or send an enquiry</p>
       <div>
-        <label htmlFor="name" className="text-xs tracking-[0.08em] uppercase">
+        <label htmlFor="name" className="font-ui text-sm text-muted">
           Name
         </label>
         <input id="name" name="name" autoComplete="name" className={field} aria-invalid={Boolean(errors.name)} />
         {errors.name ? (
-          <p className="mt-2 text-xs text-muted" role="alert">
+          <p className="mt-2 text-xs text-error" role="alert">
             {errors.name}
           </p>
         ) : null}
       </div>
 
       <div>
-        <label htmlFor="business" className="text-xs tracking-[0.08em] uppercase">
+        <label htmlFor="business" className="font-ui text-sm text-muted">
           Business
         </label>
         <input
@@ -118,19 +118,19 @@ export function InquiryForm() {
           aria-invalid={Boolean(errors.business)}
         />
         {errors.business ? (
-          <p className="mt-2 text-xs text-muted" role="alert">
+          <p className="mt-2 text-xs text-error" role="alert">
             {errors.business}
           </p>
         ) : null}
       </div>
 
       <div>
-        <label htmlFor="need" className="text-xs tracking-[0.08em] uppercase">
+        <label htmlFor="need" className="font-ui text-sm text-muted">
           What do you need help with?
         </label>
-        <textarea id="need" name="need" rows={4} className={cn(field, "resize-y")} aria-invalid={Boolean(errors.need)} />
+        <textarea id="need" name="need" rows={4} className={cn(field, "h-auto py-3 resize-y")} aria-invalid={Boolean(errors.need)} />
         {errors.need ? (
-          <p className="mt-2 text-xs text-muted" role="alert">
+          <p className="mt-2 text-xs text-error" role="alert">
             {errors.need}
           </p>
         ) : null}
@@ -138,7 +138,7 @@ export function InquiryForm() {
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
-          <label htmlFor="phone" className="text-xs tracking-[0.08em] uppercase">
+          <label htmlFor="phone" className="font-ui text-sm text-muted">
             Phone / WhatsApp number
           </label>
           <input
@@ -150,13 +150,13 @@ export function InquiryForm() {
             aria-invalid={Boolean(errors.phone)}
           />
           {errors.phone ? (
-            <p className="mt-2 text-xs text-muted" role="alert">
+            <p className="mt-2 text-xs text-error" role="alert">
               {errors.phone}
             </p>
           ) : null}
         </div>
         <div>
-          <label htmlFor="email" className="text-xs tracking-[0.08em] uppercase">
+          <label htmlFor="email" className="font-ui text-sm text-muted">
             Email
           </label>
           <input
@@ -168,7 +168,7 @@ export function InquiryForm() {
             aria-invalid={Boolean(errors.email)}
           />
           {errors.email ? (
-            <p className="mt-2 text-xs text-muted" role="alert">
+            <p className="mt-2 text-xs text-error" role="alert">
               {errors.email}
             </p>
           ) : null}
@@ -176,7 +176,7 @@ export function InquiryForm() {
       </div>
 
       <div>
-        <label htmlFor="website" className="text-xs tracking-[0.08em] uppercase">
+        <label htmlFor="website" className="font-ui text-sm text-muted">
           Company website <span className="normal-case tracking-normal text-muted">(if you have one)</span>
         </label>
         <input
@@ -196,7 +196,7 @@ export function InquiryForm() {
       </div>
 
       {message ? (
-        <p className="text-sm text-muted" role="alert">
+        <p className="text-sm text-error" role="alert">
           {message}
         </p>
       ) : null}
@@ -204,7 +204,7 @@ export function InquiryForm() {
       <button
         type="submit"
         disabled={status === "submitting"}
-        className="inline-flex min-h-11 items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase transition-colors hover:bg-text disabled:opacity-60"
+        className="font-ui inline-flex h-11 items-center justify-center rounded-lg border border-line bg-elevated px-4 text-sm font-medium text-text transition-colors hover:border-text disabled:opacity-60 sm:h-9"
       >
         {status === "submitting" ? "Sending" : home.cta.button}
       </button>

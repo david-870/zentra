@@ -6,25 +6,21 @@ export function Hero() {
   const { hero } = home;
 
   return (
-    <section
-      id="top"
-      className="sticky top-16 z-0 flex min-h-[calc(100svh-4rem)] items-center border-b border-line sm:top-[4.25rem] sm:min-h-[calc(100svh-4.25rem)]"
-    >
-      <Container className="w-full py-10 sm:py-16">
-        <h1 className="font-display rise text-[2.35rem] sm:text-6xl lg:text-7xl">
+    <section id="top" className="relative overflow-hidden border-b border-hairline">
+      <div aria-hidden="true" className="glow-drift pointer-events-none absolute top-0 left-[-20%] h-[28rem] w-[140%]" />
+      <Container className="relative w-full py-16 sm:py-24 lg:py-32">
+        <h1 className="font-display rise max-w-[12ch] text-[2.75rem] leading-none sm:text-[3.5rem] lg:text-[4.8rem] xl:text-[6rem]">
           {hero.headline.map((line) => (
             <span key={line} className="block">
               {line}
             </span>
           ))}
         </h1>
-        <p className="rise rise-2 mt-5 max-w-[34rem] text-[0.95rem] text-pretty text-muted sm:mt-6 sm:text-lg">
+        <p className="rise rise-2 mt-6 max-w-xl text-lg leading-snug text-pretty text-muted sm:text-xl">
           {hero.support}
         </p>
-        <p className="rise rise-2 mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">
-          {hero.line}
-        </p>
-        <div className="rise rise-3 mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:items-center">
+        <p className="rise rise-2 mt-5 text-sm text-ash">{hero.line}</p>
+        <div className="rise rise-3 mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Button href={hero.primary.href} className="w-full sm:w-auto">
             {hero.primary.label}
           </Button>

@@ -1,5 +1,6 @@
 import { home } from "@/content/home";
 import { InquiryForm } from "@/components/forms/InquiryForm";
+import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Section } from "@/components/ui/Section";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -7,19 +8,16 @@ import { whatsappHref } from "@/lib/whatsapp";
 export function FinalCta() {
   return (
     <Section id="contact" className="pb-24 sm:pb-28">
-      <Container className="grid gap-10 lg:grid-cols-12 lg:gap-12">
+      <Container className="grid gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
-          <h2 className="font-display text-[1.75rem] text-pretty sm:text-5xl">{home.cta.headline}</h2>
-          <p className="mt-4 text-pretty text-muted">{home.cta.support}</p>
-          <p className="mt-4 text-sm text-pretty text-muted">{home.cta.next}</p>
-          <a
-            href={whatsappHref()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex min-h-12 w-full items-center justify-center bg-white px-5 text-[0.8125rem] font-medium tracking-[0.06em] text-black uppercase sm:w-auto"
-          >
+          <h2 className="font-display text-[2.75rem] leading-none text-pretty sm:text-6xl lg:text-[4.5rem]">
+            {home.cta.headline}
+          </h2>
+          <p className="mt-5 text-pretty text-muted">{home.cta.support}</p>
+          <p className="mt-4 text-sm text-pretty text-ash">{home.cta.next}</p>
+          <Button href={whatsappHref()} className="mt-8 w-full sm:w-auto">
             WhatsApp
-          </a>
+          </Button>
         </div>
         <div className="lg:col-span-7">
           <InquiryForm />

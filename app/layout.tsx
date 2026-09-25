@@ -1,18 +1,25 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Syne } from "next/font/google";
+import { Geist, Instrument_Serif, Inter } from "next/font/google";
 import { site } from "@/content/site";
 import { GA_ID, googleTagSnippet } from "@/lib/analytics";
 import "./globals.css";
 
-const body = Inter({
+const body = Geist({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-body",
 });
 
-const display = Syne({
+const ui = Inter({
   subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: ["400", "500"],
+  display: "swap",
+  variable: "--font-ui",
+});
+
+const display = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
   variable: "--font-display",
 });
@@ -20,7 +27,7 @@ const display = Syne({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b0b0a",
+  themeColor: "#000000",
 };
 
 export const metadata: Metadata = {
@@ -51,7 +58,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" data-scroll-behavior="smooth" className={`${body.variable} ${display.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${body.variable} ${ui.variable} ${display.variable}`}>
       <head>
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
         <script dangerouslySetInnerHTML={{ __html: googleTagSnippet }} />
