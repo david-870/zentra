@@ -4,6 +4,7 @@ import { FinalCta } from "@/components/sections/FinalCta";
 import { Hero } from "@/components/sections/Hero";
 import { Packages } from "@/components/sections/Packages";
 import { Process } from "@/components/sections/Process";
+import { Projects } from "@/components/sections/Projects";
 import { Work } from "@/components/sections/Work";
 
 export default function HomePage() {
@@ -12,6 +13,7 @@ export default function HomePage() {
       <Hero />
       <Packages />
       <Work />
+      <Projects />
       <About />
       <Custom />
       <Process />

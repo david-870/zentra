@@ -67,6 +67,11 @@ export const home = {
     headline: "What we help with",
     support: "The outcome you want, and what we actually build to get you there.",
   },
+  projects: {
+    eyebrow: "Selected work",
+    headline: "Projects we have built.",
+    support: "Real work for real businesses — the problem, what we shipped, and the stack we used.",
+  },
   cta: {
     headline: "Tell us what's slowing you down.",
     support:

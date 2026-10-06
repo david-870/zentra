@@ -416,7 +416,7 @@ function run() {
     {
       title: "Can I see examples?",
       text: "Can I see examples?",
-      expect: (text) => /don't have|do not have|case-study|case study/i.test(text) && !/balotech|upskill/i.test(text),
+      expect: (text) => /set global|balotech|upskill/i.test(text) && /published work/i.test(text),
     },
     {
       title: "I want something that will stop my staff from doing everything manually.",

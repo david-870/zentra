@@ -1,5 +1,6 @@
 import { home } from "@/content/home";
 import { packages, formatPackagePrice } from "@/content/packages";
+import { projects } from "@/content/projects";
 import { customServices } from "@/content/services";
 import { work } from "@/content/work";
 import { SERVICE_GUIDES } from "@/lib/ops/service-guide";
@@ -129,13 +130,20 @@ export const BUSINESS = {
     "Acknowledge briefly. Do not argue. Do not invent a refund policy or promise a fix Ada cannot deliver. Hand the chat to a person from the team.",
   humanContact:
     "Human contact on WhatsApp is: someone from the team picks up this same chat. Do not promise a phone call. Never read out a phone number.",
+  publishedWork: projects.map((item) => `${item.name} — ${item.type}. ${item.built}`),
+  publishedWorkPolicy:
+    "Only name projects listed on the public site. Do not invent extra clients, quotes, metrics, or results. Do not claim we have built something that is not on that list.",
   credibility:
-    "Verified: Nigeria, work with businesses here and remotely, small businesses and larger companies, outcomes on the site (get found, capture enquiries, respond faster, manage customers, reduce repetitive work, custom software). Not verified: office address, industries list, team size, years operating, named clients, case-study pack, 'we have built this exact thing'. Never manufacture credibility.",
+    "Verified: Nigeria, work with businesses here and remotely, small businesses and larger companies, outcomes on the site (get found, capture enquiries, respond faster, manage customers, reduce repetitive work, custom software), and the published project list on the site. Not verified: office address, industries list, team size, years operating, extra clients beyond the published list, quotes, results, 'we have built this exact thing' unless it is on the site. Never manufacture credibility.",
   media:
     "Ada cannot inspect WhatsApp images, documents or files in this setup. If they send one, say so and ask them to describe what they want the system to do.",
   unknownPolicy:
     "If it is not in this knowledge, say you do not have confirmed information and offer to connect them with the Zentra team. Do not use a generic loop.",
 } as const;
+
+export function publishedWorkReply() {
+  return `Published work on the site:\n${BUSINESS.publishedWork.map((item) => `- ${item}`).join("\n")}\n\n${BUSINESS.publishedWorkPolicy}\n\nWhat kind of project are you comparing it to?`;
+}
 
 function serviceFields(id: keyof typeof SERVICE_GUIDES) {
   return {
@@ -238,6 +246,10 @@ ${BUSINESS.complaints}
 
 HUMAN CONTACT
 ${BUSINESS.humanContact}
+
+PUBLISHED WORK
+${BUSINESS.publishedWork.map((item) => `- ${item}`).join("\n")}
+${BUSINESS.publishedWorkPolicy}
 
 CREDIBILITY AND LOCATION
 ${BUSINESS.credibility}

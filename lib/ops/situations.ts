@@ -1,4 +1,5 @@
 import { foldText } from "@/lib/ops/intent";
+import { publishedWorkReply } from "@/lib/ops/business-context";
 
 export type SituationId =
   | "complaint"
@@ -8,6 +9,7 @@ export type SituationId =
   | "discount"
   | "attachment"
   | "location"
+  | "portfolio"
   | "credibility"
   | "problem_manual"
   | "problem_tracking"
@@ -64,9 +66,14 @@ const RULES: { id: SituationId; pattern: RegExp }[] = [
       /\b(nigerian businesses|work internationally|outside nigeria|work remotely|where are you based|do you have an office|have an office)\b/i,
   },
   {
+    id: "portfolio",
+    pattern:
+      /\b(built something like this|see examples|who are your clients|case stud|portfolio|your work|projects you('ve| have)? (done|built))\b/i,
+  },
+  {
     id: "credibility",
     pattern:
-      /\b(what industries|built something like this|see examples|how experienced|how many developers|how long have you been|who are your clients|case stud)\b/i,
+      /\b(what industries|how experienced|how many developers|how long have you been)\b/i,
   },
   {
     id: "problem_manual",
@@ -185,6 +192,8 @@ export function situationReply(id: SituationId): string {
       return `I can see you sent a file, but I can't inspect images or documents in this chat yet.\n\nTell me what you'd like the system to do, or describe the example you're referring to.`;
     case "location":
       return `We're in Nigeria and we work with businesses here and remotely. I don't have confirmed information about a specific office address, and I don't want to guess.\n\nIf your company is outside Nigeria, the team can confirm that for your case.\n\nAre you asking from Nigeria, or from somewhere else?`;
+    case "portfolio":
+      return publishedWorkReply();
     case "credibility":
       return `We help businesses get found, capture enquiries, respond faster, manage customers, cut repetitive work, and build custom software. I don't have a published industries list, team size, years in operation, named-client list or case-study pack in my notes — I won't invent those.\n\nIf you want to see relevant work, I can connect you with the team.\n\nWhat kind of project are you comparing it to?`;
     case "problem_manual":

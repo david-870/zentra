@@ -1,4 +1,4 @@
-import { BUSINESS, businessPrompt } from "@/lib/ops/business-context";
+import { BUSINESS, businessPrompt, publishedWorkReply } from "@/lib/ops/business-context";
 import { SERVICE_GUIDES } from "@/lib/ops/service-guide";
 
 export type KnowledgeChunk = {
@@ -88,6 +88,11 @@ export const KNOWLEDGE: KnowledgeChunk[] = [
     id: "partnership",
     tags: ["partner", "collaborate", "referral", "reseller"],
     answer: BUSINESS.partnership,
+  },
+  {
+    id: "portfolio",
+    tags: ["portfolio", "examples", "clients", "case", "projects"],
+    answer: publishedWorkReply(),
   },
   {
     id: "location-remote",

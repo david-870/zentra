@@ -1,4 +1,4 @@
-import { BUSINESS } from "@/lib/ops/business-context";
+import { BUSINESS, publishedWorkReply } from "@/lib/ops/business-context";
 import { capabilityReply, detectCapability, nextTopicFor } from "@/lib/ops/capabilities";
 import { detectIntent, foldText, lastAssistantText } from "@/lib/ops/intent";
 import type { LeadContext } from "@/lib/ops/qualify";
@@ -388,7 +388,7 @@ export function fallbackAnswer(
 
   if (intent === "portfolio") {
     return {
-      text: `We help businesses ${BUSINESS.outcomes.map((item) => item.split(" — ")[0].toLowerCase()).join(", ")}.\n\nI don't have a public case-study list in my notes to send you here. If you'd like to see relevant work, I can connect you with the team.\n\nWhat kind of project are you comparing it to?`,
+      text: publishedWorkReply(),
       handoff: false,
       qualify: false,
     };
