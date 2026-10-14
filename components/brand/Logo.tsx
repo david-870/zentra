@@ -6,7 +6,9 @@ const logoSource = "/brand/zentra-logo.jpeg";
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="375 280 330 225" className={cn("h-8 w-12 shrink-0", className)} aria-hidden="true">
-      <image href={logoSource} width="1080" height="1080" />
+      <svg x="375" y="280" width="330" height="225" viewBox="375 280 330 225" overflow="hidden">
+        <image href={logoSource} width="1080" height="1080" />
+      </svg>
     </svg>
   );
 }
@@ -28,3 +30,4 @@ export function Logo({ className, variant = "compact" }: { className?: string; v
     </span>
   );
 }
+
