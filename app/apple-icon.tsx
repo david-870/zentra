@@ -1,26 +1,17 @@
 import { ImageResponse } from "next/og";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 
-export default function AppleIcon() {
+export default async function Icon() {
+  const source = await readFile(join(process.cwd(), "public/brand/zentra-logo.jpeg"));
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#0B0B0A",
-        }}
-      >
-        <svg width="108" height="118" viewBox="0 0 51 56" fill="#F3F1EA">
-          <path d="M0 0h51v8L11 48h40v8H0v-8l40-40H0V0Z" />
-        </svg>
+    <div style={{ width: "100%", height: "100%", display: "flex", overflow: "hidden", position: "relative", background: "#040a16" }}>
+      <div style={{ position: "absolute", left: "9%", top: "22%", width: "82%", height: "56%", display: "flex", overflow: "hidden" }}>
+      <img alt="" src={`data:image/jpeg;base64,${source.toString("base64")}`} width={size.width * 2.684} height={size.height * 2.684} style={{ position: "absolute", left: -size.width * 0.932, top: -size.height * 0.696 }} />
       </div>
-    ),
-    size,
+    </div>, size,
   );
 }

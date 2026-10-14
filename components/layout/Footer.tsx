@@ -9,7 +9,7 @@ export function Footer() {
     <footer className="relative z-10 bg-bg">
       <Container className="py-16">
         <Link href="/#top" aria-label="Zentra home">
-          <Logo />
+          <Logo variant="full" />
         </Link>
         <p className="mt-4 max-w-xs text-sm text-muted">{site.description}</p>
         <div className="mt-5 space-y-2 text-sm text-muted"><a className="block hover:text-text" href={`mailto:${site.email}`}>{site.email}</a><a className="inline-flex min-h-11 items-center hover:text-text" href={`https://wa.me/${site.whatsapp.e164}`} target="_blank" rel="noopener noreferrer">WhatsApp: {site.whatsapp.display}</a></div>

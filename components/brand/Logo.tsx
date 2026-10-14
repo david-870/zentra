@@ -1,30 +1,30 @@
 import { cn } from "@/lib/cn";
 
-/** Geometric Z — 45° diagonal, no frame. Used as the Z in Zentra. */
-export const logoMarkPath =
-  "M0 0h51v8L11 48h40v8H0v-8l40-40H0V0Z";
+const logoSource = "/brand/zentra-logo.jpeg";
 
+/** Show the original artwork through a viewport; never redraw the brand. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 51 56" className={cn("h-[1em] w-[0.91em] shrink-0", className)} aria-hidden="true">
-      <path fill="currentColor" d={logoMarkPath} />
+    <svg viewBox="375 280 330 225" className={cn("h-8 w-12 shrink-0", className)} aria-hidden="true">
+      <image href={logoSource} width="1080" height="1080" />
     </svg>
   );
 }
 
-export function Logo({
-  className,
-  markClassName,
-  wordClassName,
-}: {
-  className?: string;
-  markClassName?: string;
-  wordClassName?: string;
-}) {
+export function Logo({ className, variant = "compact" }: { className?: string; variant?: "compact" | "full" }) {
+  if (variant === "full") {
+    return (
+      <svg viewBox="200 275 680 500" role="img" aria-label="Zentra — Build. Automate. Grow." className={cn("h-auto w-56 max-w-full", className)}>
+        <image href={logoSource} width="1080" height="1080" />
+      </svg>
+    );
+  }
   return (
-    <span className={cn("font-ui inline-flex max-w-full items-center text-[1.2rem] font-medium leading-none tracking-tight", className)}>
-      <LogoMark className={markClassName} />
-      <span className={cn("-ml-[0.06em]", wordClassName)}>entra</span>
+    <span role="img" aria-label="Zentra" className={cn("inline-flex max-w-full items-center gap-2", className)}>
+      <LogoMark />
+      <svg viewBox="210 530 665 175" className="h-8 w-[122px]" aria-hidden="true">
+        <image href={logoSource} width="1080" height="1080" />
+      </svg>
     </span>
   );
 }
