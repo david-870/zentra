@@ -8,17 +8,21 @@ import { explainService } from "@/lib/ops/service-guide";
 
 function starterPrice() {
   const starter = BUSINESS.packages.find((item) => item.id === "starter");
-  return starter?.price ?? "Starting from ₦250,000";
+  return starter?.price ?? "Starting from ₦200,000";
 }
 
 function growthPrice() {
   const growth = BUSINESS.packages.find((item) => item.id === "growth");
-  return growth?.price ?? "Starting from ₦650,000";
+  return growth?.price ?? "Starting from ₦450,000";
 }
 
 function scalePrice() {
   const scale = BUSINESS.packages.find((item) => item.id === "scale");
-  return scale?.price ?? "From ₦1,500,000";
+  return scale?.price ?? "Up to ₦800,000";
+}
+
+function enterprisePrice() {
+  return BUSINESS.packages.find(item => item.id === "enterprise")?.price ?? "Starting from ₦1,500,000";
 }
 
 function packagesBlurb() {
@@ -145,7 +149,7 @@ export function fallbackAnswer(
     const value = text.toLowerCase();
     if (/small budget|don't have (much|plenty) money|low budget/.test(value)) {
       return {
-        text: `We work with small businesses as well as larger ones. The lowest confirmed starting point is Starter, from ₦250,000. I don't have a cheaper unofficial package to offer.\n\nWhat are you trying to get done?`,
+        text: `We work with small businesses as well as larger ones. The lowest confirmed starting point is Starter, from ₦200,000. I don't have a cheaper unofficial package to offer.\n\nWhat are you trying to get done?`,
         handoff: false,
         qualify: false,
       };
@@ -270,13 +274,13 @@ export function fallbackAnswer(
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Premium* — ${scalePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
+        text: `Custom software is closer to *Enterprise* — ${enterprisePrice()}, confirmed after a conversation.\n\nWhat should the system actually do for the team?`,
         handoff: false,
         qualify: false,
       };
     }
     return {
-      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Standard* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Premium* — ${scalePrice()} — systems built around how you already work.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
+      text: `I can recommend a starting point once I know the problem.\n\n- *Starter* — ${starterPrice()} — get found and make it easy to contact you.\n- *Standard* — ${growthPrice()} — keep up with enquiries and follow-up.\n- *Premium* — ${scalePrice()} — automate replies and lead follow-ups.\n- *Enterprise* — ${enterprisePrice()} — improve or replace existing systems.\n\nWhat's slowing the business down — getting found, messages piling up, or work the team still does by hand?`,
       handoff: false,
       qualify: false,
     };
@@ -315,7 +319,7 @@ export function fallbackAnswer(
     }
     if (focus === "software") {
       return {
-        text: `Custom software is closer to *Premium* — ${scalePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
+        text: `Custom software is closer to *Enterprise* — ${enterprisePrice()}, confirmed after a conversation. We don't quote a single number until we know what the system should do.\n\nWhat should the software actually do for the team?`,
         handoff: false,
         qualify: false,
       };
@@ -347,7 +351,7 @@ export function fallbackAnswer(
       return {
         text: withName(
           ctx,
-          "Yes. We build websites for businesses so customers can find you, see what you do, and get in touch — WhatsApp and a form included. Starter starts from ₦250,000.\n\nDo you already have a site, or is this new?",
+          "Yes. We build websites for businesses so customers can find you, see what you do, and get in touch — WhatsApp and a form included. Starter starts from ₦200,000.\n\nDo you already have a site, or is this new?",
         ),
         handoff: false,
         qualify: false,

@@ -1,36 +1,16 @@
+import { packages as publishedPackages, confirmedPackagePrices } from "@/content/packages";
 import { hashPassword, verifyPassword } from "@/lib/ops/auth";
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 
-const packages = [
-  {
-    id: "starter",
-    name: "Starter",
-    description: "For businesses establishing their online presence.",
-    priceLabel: "Starting from ₦250,000. One-time project.",
-    features:
-      "A professional website that works on a phone; A simple way for customers to contact you; WhatsApp on your site; A setup that can answer common questions when you are busy; A form so enquiries are not lost; We put the site live for you",
-    sortOrder: 1,
-  },
-  {
-    id: "growth",
-    name: "Standard",
-    description: "For businesses getting enquiries but struggling to manage leads and repetitive tasks.",
-    priceLabel: "Starting from ₦650,000. One-time project.",
-    features:
-      "A full website; WhatsApp or Instagram replies so messages do not pile up; Capture and keep track of leads; A simple customer list; Automate repetitive tasks such as customer enquiries, follow-ups, bookings and lead management; See how people find you; Launch and training for your team",
-    sortOrder: 2,
-  },
-  {
-    id: "scale",
-    name: "Premium",
-    description: "For established businesses that need integrated or custom systems.",
-    priceLabel: "From ₦1,500,000. Scoped after a conversation.",
-    features:
-      "A custom website or web application; WhatsApp and Instagram as part of one system; A customer system your team can run; Automate work across people, chats and spreadsheets; Connect the tools you already use; Dashboards; Custom software where a package is not enough; Launch, handover and training",
-    sortOrder: 3,
-  },
-];
+const packages = publishedPackages.map((item, index) => ({
+  id: item.id,
+  name: item.name,
+  description: item.audience + " " + item.description,
+  priceLabel: `${item.priceCaption} ${item.currency}${item.price}. ${item.billing}.`,
+  features: item.features.join("; "),
+  sortOrder: index + 1,
+}));
 
 const services = [
   { id: "website", name: "Website / Web Application", summary: "Sites and web apps people can use.", sortOrder: 1 },
@@ -59,7 +39,7 @@ const knowledge = [
   {
     key: "pricing-policy",
     title: "Pricing policy",
-    body: "Only quote Starter ₦250,000, Standard ₦650,000, and Premium from ₦1,500,000. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.",
+    body: `Only quote the published prices: ${confirmedPackagePrices}. Premium package work is capped at ₦800,000 for the agreed features; paid tools, messaging fees, taxes, and extra features are separate. Never invent discounts, timelines, guarantees, or extra prices. If unsure, offer a human handoff.`,
   },
   {
     key: "handoff",

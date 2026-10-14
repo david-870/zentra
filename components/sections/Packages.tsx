@@ -1,88 +1,46 @@
-import { home } from "@/content/home";
-import { packages } from "@/content/packages";
-import { Button } from "@/components/ui/Button";
+"use client";
+import { useState } from "react";
+import { packages, type PackageId } from "@/content/packages";
 import { Container } from "@/components/ui/Container";
-import { Section } from "@/components/ui/Section";
-import { packageWhatsappHref } from "@/lib/whatsapp";
+import { CustomBuilder } from "@/components/forms/CustomBuilder";
 import { cn } from "@/lib/cn";
 
-function Check() {
-  return (
-    <svg viewBox="0 0 16 16" className="mt-0.5 size-3.5 shrink-0 text-ash" aria-hidden="true">
-      <path
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-        d="M2.5 8.2 6.2 12 13.5 4"
-      />
-    </svg>
-  );
-}
+const rows = [
+ ['Best for','New and starting businesses','Growing businesses','Businesses with leads, ready to grow sales','Established businesses improving their systems'],
+ ['Website, app, or business system','Up to 5 website pages','Up to 8 website pages','Customer and sales tracking · 1 sales process','Improve a system or build a web app · up to 2 main functions'],
+ ['Managing customers','Enquiries saved to email or spreadsheet','Customer list to track 1 sales process','Track enquiries, follow-ups, and sales','Connect up to 2 tools you already use'],
+ ['Tasks handled automatically','1 simple task','Up to 2 connected tasks','Up to 3 tasks, including lead follow-ups','Up to 3 tasks'],
+ ['WhatsApp and Instagram','Button to contact you on WhatsApp','Automatic replies on 1 account*','Replies and follow-ups on up to 2 accounts*','Based on the tools we agree to connect*'],
+ ['AI assistant for customer questions','Not included','AI answers + a way to reach your team','AI answers + handover to your team','Based on your agreed system plan'],
+ ['Business reports','Track website visits + basic Google setup','Track enquiries + a plan to promote your business','Track enquiries, follow-ups, and sales','Screen showing agreed business reports'],
+ ['Fixing errors after launch','14 days','30 days','60 days','60 days'],
+ ['Expected delivery time','2–3 weeks','4–6 weeks','Agreed after we discuss your needs','Agreed after we discuss your needs']
+];
+const goals: { id: PackageId; title: string; reason: string }[] = [
+ { id:'starter',title:'I am starting and want customers to find me',reason:'Build your online presence, save customer enquiries, and start with one simple automatic task.' },
+ { id:'growth',title:'My business is growing and I need to organise enquiries',reason:'Keep customer details together, answer common questions, and make daily work easier.' },
+ { id:'scale',title:'I have leads and need help with replies and follow-ups',reason:'Automate replies, lead follow-ups, and repeated tasks so your team can focus on sales.' },
+ { id:'enterprise',title:'I want to improve or replace my existing business system',reason:'Review what you use today and improve or replace it around the way your business works.' }
+];
+function choose(id: PackageId) { window.dispatchEvent(new CustomEvent('zentra:package',{detail:id})); document.getElementById('contact')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'}); }
+const actionClass='font-ui inline-flex min-h-12 w-full items-center justify-between rounded-lg border border-line px-5 text-sm transition-colors hover:border-text';
 
 export function Packages() {
-  const copy = home.packages;
-
-  return (
-    <Section id="solutions" className="border-b border-hairline">
-      <Container>
-        <p className="font-ui text-sm text-ash">{copy.eyebrow}</p>
-        <h2 className="font-display mt-4 max-w-[14ch] text-[2.75rem] leading-none text-pretty sm:text-6xl lg:text-[4.5rem]">
-          {copy.headline}
-        </h2>
-        <p className="mt-5 max-w-2xl text-muted">{copy.support}</p>
-
-        <div className="mt-12 grid min-w-0 items-stretch gap-4 lg:grid-cols-3">
-          {packages.map((item) => (
-            <article
-              key={item.id}
-              className={cn(
-                "flex min-w-0 flex-col rounded-xl border border-line bg-raised p-6 sm:p-8",
-                item.featured && "bg-elevated",
-              )}
-            >
-              <div className="min-h-7">
-                {item.badge ? (
-                  <p className="font-ui inline-flex rounded-full bg-bg px-2.5 py-1 text-xs text-text">{item.badge}</p>
-                ) : null}
-              </div>
-
-              <h3 className="font-ui mt-4 text-2xl font-medium tracking-tight">{item.name}</h3>
-              <p className="mt-3 text-sm text-text">{item.audience}</p>
-              <p className="mt-2 text-sm text-muted">{item.description}</p>
-
-              <div className="mt-8">
-                {item.priceCaption ? <p className="font-ui text-xs text-ash">{item.priceCaption}</p> : null}
-                <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  {item.pricePrefix ? <span className="text-sm text-muted">{item.pricePrefix}</span> : null}
-                  <span className="text-[1.75rem] leading-none tracking-[-0.04em] sm:text-[2.15rem]">
-                    {item.currency}
-                    {item.price}
-                  </span>
-                </p>
-                <p className="mt-2 text-sm text-muted">{item.billing}</p>
-              </div>
-
-              <ul className="mt-8 flex-1 space-y-3">
-                {item.features.map((line) => (
-                  <li key={line} className="flex gap-3 text-sm text-pretty">
-                    <Check />
-                    <span>{line}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                href={packageWhatsappHref(item)}
-                variant={item.featured ? "primary" : "secondary"}
-                className="mt-10 w-full"
-              >
-                {item.cta}
-              </Button>
-            </article>
-          ))}
-        </div>
-      </Container>
-    </Section>
-  );
+ const [compare,setCompare]=useState(false); const [finder,setFinder]=useState(false); const [goal,setGoal]=useState<PackageId|null>(null);
+ const recommendation=packages.find(p=>p.id===goal);
+ return <section id="solutions" className="border-b border-hairline bg-[#050507] py-14 sm:py-20">
+ <Container><div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-end"><div><p className="font-ui text-xs tracking-[0.1em] text-ash">CHOOSE WHAT YOUR BUSINESS NEEDS</p><h2 className="font-display mt-5 text-[2.8rem] leading-none sm:text-6xl">A package for<br/>your business.</h2></div><p className="max-w-sm text-sm leading-relaxed text-muted">Start with what you need today.<br/>We will explain what is included and help you choose.</p></div>
+ <div className="mt-9 mb-6 flex flex-wrap items-center justify-between gap-4"><div role="group" aria-label="Package display" className="font-ui flex rounded-lg border border-line bg-raised p-1 text-xs"><button className={cn('rounded-md px-4 py-3',!compare?'bg-text text-black':'text-muted')} aria-pressed={!compare} onClick={()=>setCompare(false)}>Packages</button><button className={cn('rounded-md px-4 py-3',compare?'bg-text text-black':'text-muted')} aria-pressed={compare} onClick={()=>setCompare(true)}>Compare packages</button></div><button className="font-ui min-h-11 text-xs text-muted hover:text-text" aria-expanded={finder} aria-controls="package-finder" onClick={()=>setFinder(!finder)}>Help me choose <span className="ml-2" aria-hidden="true">{finder?'−':'+'}</span></button></div>
+ {finder && <div id="package-finder" className="mb-6 rounded-xl border border-line bg-raised p-5 sm:p-6"><h3 className="font-ui text-lg">What do you need help with?</h3><p className="mt-2 text-xs text-muted">Choose the answer that best describes your business.</p><div className="mt-5 grid gap-3 md:grid-cols-2" role="group" aria-label="Main business goal">{goals.map(g=><button key={g.id} onClick={()=>setGoal(g.id)} aria-pressed={goal===g.id} className={cn('rounded-lg border px-4 py-4 text-left text-xs',goal===g.id?'border-[#a7bad2] bg-[#101925]':'border-line bg-elevated hover:border-ash')}>{g.title} <span aria-hidden="true">↗</span></button>)}</div>{recommendation && <div className="mt-5 flex flex-col justify-between gap-4 border-t border-hairline pt-5 sm:flex-row sm:items-center"><p role="status" className="text-xs leading-relaxed text-muted"><strong className="font-medium text-text">Start with {recommendation.name}. </strong>{goals.find(g=>g.id===goal)?.reason}</p><button className="font-ui shrink-0 rounded-lg bg-text px-5 py-3 text-xs text-black" onClick={()=>choose(recommendation.id)}>Choose {recommendation.name} ↗</button></div>}</div>}
+ {compare ? <><div className="overflow-x-auto rounded-xl border border-line" tabIndex={0} aria-label="Package comparison. Scroll horizontally on small screens."><table className="w-full min-w-[1100px] border-collapse text-left text-xs"><caption className="sr-only">Compare Starter, Standard, Premium, and Enterprise</caption><thead><tr><th className="p-5 font-medium">What you get</th>{packages.map(p=><th scope="col" key={p.id} className={cn('p-5 font-ui font-medium',p.featured?'bg-[#101925]':'bg-raised')}><span className="text-lg">{p.name}</span><span className="mt-2 block text-[11px] text-ash">{p.priceCaption} {p.currency}{p.price}</span></th>)}</tr></thead><tbody>{rows.map(([label,...values])=><tr key={label} className="border-t border-hairline"><th scope="row" className="p-5 font-normal text-muted">{label}</th>{values.map((v,i)=><td key={i} className={cn('p-5 leading-relaxed',i===2?'bg-[#101925]':'bg-raised')}>{v}</td>)}</tr>)}</tbody><tfoot><tr className="border-t border-line"><td/>{packages.map(p=><td key={p.id} className="p-5"><button className={cn(actionClass,'!text-xs',p.featured?'bg-text text-black':'bg-elevated')} onClick={()=>choose(p.id)}>{p.cta}<span aria-hidden="true">↗</span></button></td>)}</tr></tfoot></table></div><p className="mt-3 text-[10px] text-ash md:hidden">Swipe the table to compare all four packages.</p></> : <div className="grid gap-4 md:grid-cols-2">{packages.map((p,i)=><article key={p.id} className={cn('flex flex-col rounded-xl border bg-raised p-6 sm:p-8',goal===p.id?'border-[#a7bad2]':p.featured?'border-[#5a7594] !bg-[#0c1017]':'border-line')}><div className="flex min-h-7 items-center justify-between"><span className="text-[10px] text-ash">0{i+1}</span>{p.badge && <span className="font-ui rounded-full border border-[#3a4e68] bg-[#142034] px-3 py-1 text-[9px] text-[#bccde1]">{p.badge}</span>}</div><h3 className="font-ui mt-5 text-2xl font-medium tracking-tight">{p.name}</h3><p className="mt-3 text-sm">{p.audience}</p><p className="mt-2 min-h-11 text-xs leading-relaxed text-muted">{p.description}</p><div className="mt-7"><p className="text-[10px] text-ash">{p.priceCaption}</p><p className="mt-2 text-[2.05rem] leading-none tracking-tight">{p.currency}{p.price}</p><p className="mt-3 text-[11px] text-ash">{p.billing}</p></div><button className={cn(actionClass,'mt-7',p.featured?'bg-text text-black':'bg-elevated')} onClick={()=>choose(p.id)}>{p.cta}<span aria-hidden="true">↗</span></button><ul className="my-7 flex-1 space-y-3">{p.features.map(f=><li key={f} className="flex gap-3 text-xs leading-relaxed"><span className="text-[#829cba]" aria-hidden="true">✓</span><span>{f}</span></li>)}</ul><p className="border-t border-hairline pt-4 text-[10px] text-ash">{i===0?'Expected delivery: 2–3 weeks':i===1?'Expected delivery: 4–6 weeks':'Delivery time agreed after we discuss your needs'}</p></article>)}</div>}
+ <div id="custom" className="mt-8 rounded-xl border border-line bg-raised p-6 sm:p-8">
+  <p className="font-ui text-xs tracking-[0.1em] text-ash">CUSTOM CONSULTATION</p>
+  <h3 className="font-display mt-4 text-3xl sm:text-4xl">Need something different?</h3>
+  <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">Choose what your business needs below. Whether it is an AI assistant, an app, customer follow-ups, or better visibility on Google, we will help you put the right solution together.</p>
+  <p className="mt-3 mb-7 text-xs text-ash">Custom price after consultation. We agree the features, full cost, and delivery date before work starts.</p>
+  <CustomBuilder />
+ </div>
+ <p className="mx-auto mt-6 max-w-4xl text-center text-[10px] leading-relaxed text-ash">Starter, Standard, and Enterprise show starting prices in naira. Premium package work is capped at ₦800,000 for the agreed features. Extra features can be quoted through a custom consultation. We agree what we will build, the full price, and the delivery date before work starts. Your website address (domain), hosting, paid tools, message fees, adverts, and any taxes cost extra. *Automatic WhatsApp and Instagram replies need platform approval and account access.</p>
+ <p className="mt-9 border-t border-hairline pt-6 text-center text-xs leading-loose text-muted">Apps and business software <span className="mx-3 text-ash">·</span> AI assistants and automation <span className="mx-3 text-ash">·</span> Managing customer enquiries <span className="mx-3 text-ash">·</span> Google search visibility (SEO)</p>
+ </Container></section>;
 }

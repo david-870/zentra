@@ -1,14 +1,15 @@
 export const customServices = [
   { id: "website", label: "Website" },
-  { id: "web-app", label: "Web Application" },
-  { id: "mobile-app", label: "Mobile Application" },
-  { id: "ai-assistant", label: "AI Assistant" },
-  { id: "whatsapp", label: "WhatsApp Automation" },
-  { id: "instagram", label: "Instagram Automation" },
-  { id: "crm", label: "CRM" },
-  { id: "automation", label: "Business Automation" },
-  { id: "software", label: "Custom Software" },
-  { id: "marketing", label: "Marketing / Growth" },
+  { id: "web-app", label: "Web app" },
+  { id: "mobile-app", label: "Mobile app" },
+  { id: "ai-assistant", label: "AI assistant" },
+  { id: "whatsapp", label: "WhatsApp replies and follow-ups" },
+  { id: "instagram", label: "Instagram replies and follow-ups" },
+  { id: "crm", label: "Customer and sales tracking" },
+  { id: "automation", label: "Automate daily tasks" },
+  { id: "software", label: "Custom business software" },
+  { id: "marketing", label: "Digital marketing" },
+  { id: "seo", label: "Google search visibility (SEO)" },
 ] as const;
 
 export type CustomServiceId = (typeof customServices)[number]["id"];

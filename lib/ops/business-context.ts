@@ -1,8 +1,8 @@
 import { home } from "@/content/home";
-import { packages, formatPackagePrice } from "@/content/packages";
-import { projects } from "@/content/projects";
+import { packages, formatPackagePrice, confirmedPackagePrices } from "@/content/packages";
 import { customServices } from "@/content/services";
 import { work } from "@/content/work";
+import { site } from "@/content/site";
 import { SERVICE_GUIDES } from "@/lib/ops/service-guide";
 
 /**
@@ -13,7 +13,7 @@ export const BUSINESS = {
   name: "Zentra",
   assistantName: "Ada",
   tagline: "Build. Automate. Grow.",
-  what: home.why.support,
+  what: site.description,
   value: home.hero.support,
   trust: home.why.trust,
   whoFor:
@@ -34,17 +34,17 @@ export const BUSINESS = {
     smallAndNew: "Yes. Starter exists for businesses that are still getting found. Being new or a one-person business is fine.",
     individuals:
       "We work with businesses, including one-person businesses. If this is a personal project with no business, say so and offer the team rather than promising a consumer product.",
-    established: "Yes. Premium is for established businesses that need systems built around how they already work.",
+    established: "Yes. Enterprise is for established businesses that need systems built around how they already work.",
     noWebsiteYet: "Yes. A business with no website yet is a normal starting point.",
     smallBudget:
-      "Share the confirmed starting prices. Do not invent a cheaper package. If their budget may be below Starter, be honest that work starts from ₦250,000 and offer the team.",
+      "Share the confirmed starting prices. Do not invent a cheaper package. If their budget may be below Starter, be honest that work starts from ₦200,000 and offer the team.",
   },
   ecommerce:
     "An online store is a site people use to browse and order. Starter does not include taking payments on the site. Ecommerce / checkout is closer to a web app or custom setup, scoped after a conversation. Ask whether they need browse-and-WhatsApp, or pay on the site.",
   marketingVsTech:
     "Zentra is a technology studio. Marketing on the site means helping the business get found and turn that into real enquiries — usually a clear website, WhatsApp, and follow-up. It is not a confirmed content studio, ads agency, Instagram-growth service, or 'we manage everything' retainer. Never guarantee customers, sales, followers or revenue.",
   existingSystems:
-    "Do not assume they need a brand-new system. We can work with a site or tools they already have, and Premium includes connecting tools they already use. Ask what they have today (WordPress, Shopify, a developer, a CRM, WhatsApp) and what is actually failing.",
+    "Do not assume they need a brand-new system. We can work with a site or tools they already have, and Enterprise includes connecting tools they already use. Ask what they have today (WordPress, Shopify, a developer, a CRM, WhatsApp) and what is actually failing.",
   hosting:
     "Starter includes putting the site live. There is no confirmed domain-reseller, hosting plan, monthly retainer, maintenance SLA, or ownership clause in this knowledge. After launch we show the team how to use the system. Do not invent who owns the domain, monthly fees, or what happens if the site goes down.",
   paymentTerms:
@@ -106,7 +106,7 @@ export const BUSINESS = {
       name: "Custom software",
       ...serviceFields("software"),
       extra:
-        "This can include internal tools and, where needed, a mobile application. Features are not guessed. Scope, timeline and cost come after a conversation. Starting point is Premium, from ₦1,500,000.",
+        "This can include internal tools and, where needed, a mobile application. Features are not guessed. Scope, timeline and cost come after a conversation. Starting point is Enterprise, from ₦1,500,000.",
     },
     marketing: {
       name: "Marketing / growth",
@@ -114,9 +114,9 @@ export const BUSINESS = {
     },
   },
   pricingPolicy: [
-    "Only quote confirmed starting prices: Starter from ₦250,000, Standard from ₦650,000, Premium from ₦1,500,000.",
-    "These are starting prices for one-time projects, not a promise that every job costs the same.",
-    "Premium is confirmed after a conversation.",
+    `Only quote the confirmed published prices: ${confirmedPackagePrices}.`,
+    "Starter, Standard, and Enterprise are starting prices for agreed project work. Premium package work is capped at ₦800,000 for the agreed features; external costs and extra features are separate.",
+    "Enterprise is confirmed after a conversation.",
     "Never invent discounts, free services, special offers, payment plans, extra fees, or exact delivery dates.",
     "If a price is not in this knowledge, say you do not have it and offer a person from the team.",
   ],
@@ -130,7 +130,7 @@ export const BUSINESS = {
     "Acknowledge briefly. Do not argue. Do not invent a refund policy or promise a fix Ada cannot deliver. Hand the chat to a person from the team.",
   humanContact:
     "Human contact on WhatsApp is: someone from the team picks up this same chat. Do not promise a phone call. Never read out a phone number.",
-  publishedWork: projects.map((item) => `${item.name} — ${item.type}. ${item.built}`),
+  publishedWork: [] as string[],
   publishedWorkPolicy:
     "Only name projects listed on the public site. Do not invent extra clients, quotes, metrics, or results. Do not claim we have built something that is not on that list.",
   credibility:
@@ -142,7 +142,7 @@ export const BUSINESS = {
 } as const;
 
 export function publishedWorkReply() {
-  return `Published work on the site:\n${BUSINESS.publishedWork.map((item) => `- ${item}`).join("\n")}\n\n${BUSINESS.publishedWorkPolicy}\n\nWhat kind of project are you comparing it to?`;
+  return "We have not added a public portfolio to the website yet. The team can discuss relevant experience with you. What kind of project do you have in mind?";
 }
 
 function serviceFields(id: keyof typeof SERVICE_GUIDES) {
@@ -209,7 +209,7 @@ If they want internships, mentorship or hiring: those are not in this knowledge.
 
 ECOMMERCE AND SITE FEATURES
 ${BUSINESS.ecommerce}
-Payments, shops, booking systems, logins, memberships, portals and dashboards are web apps or custom work, not Starter. Starter can include a form, WhatsApp on the site, and a site that works on a phone. Analytics (seeing how people find you) is in Standard. Connecting tools/CRM is Premium-level.
+Payments, shops, booking systems, logins, memberships, portals and dashboards are web apps or custom work, not Starter. Starter can include a form, WhatsApp on the site, and a site that works on a phone. Analytics (seeing how people find you) is in Standard. Connecting tools/CRM is Enterprise-level.
 Do not clone Uber/Jumia/Amazon. Build the parts the business needs.
 
 AI AND WHATSAPP (realistic)

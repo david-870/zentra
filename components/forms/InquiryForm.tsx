@@ -1,213 +1,38 @@
 "use client";
-
-import { useState } from "react";
-import { home } from "@/content/home";
+import { useEffect, useRef, useState } from "react";
+import { packages, isPackageId, type PackageId } from "@/content/packages";
 import { whatsappHref } from "@/lib/whatsapp";
-import { cn } from "@/lib/cn";
+import { site } from "@/content/site";
 
-type Status = "idle" | "submitting" | "error" | "success";
-
-function isEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function isPhone(value: string) {
-  return value.replace(/\D/g, "").length >= 10;
-}
-
+const field='font-ui mt-2 min-h-12 w-full rounded-lg border border-line bg-elevated px-3.5 py-3 text-sm text-text focus:border-text';
+const label='font-ui text-xs text-muted';
 export function InquiryForm() {
-  const [status, setStatus] = useState<Status>("idle");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [message, setMessage] = useState("");
-
-  if (status === "success") {
-    return (
-      <div className="rounded-xl border border-line bg-raised p-8" role="status">
-        <p className="font-ui text-2xl font-medium tracking-tight">We have the enquiry.</p>
-        <p className="mt-3 text-muted">
-          We will review it and come back with a next step. If you need to talk now, WhatsApp is still open.
-        </p>
-        <a
-          href={whatsappHref()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-ui mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-line bg-elevated px-4 text-sm font-medium sm:h-9"
-        >
-          WhatsApp
-        </a>
-      </div>
-    );
-  }
-
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = String(data.get("name") ?? "").trim();
-    const business = String(data.get("business") ?? "").trim();
-    const need = String(data.get("need") ?? "").trim();
-    const phone = String(data.get("phone") ?? "").trim();
-    const email = String(data.get("email") ?? "").trim();
-    const website = String(data.get("website") ?? "").trim();
-    const trap = String(data.get("company_fax") ?? "").trim();
-    const nextErrors: Record<string, string> = {};
-
-    if (name.length < 2) nextErrors.name = "Enter your name.";
-    if (business.length < 2) nextErrors.business = "Enter your business name.";
-    if (need.length < 8) nextErrors.need = "Tell us what you need help with.";
-    if (!isPhone(phone)) nextErrors.phone = "Enter a phone or WhatsApp number.";
-    if (!isEmail(email)) nextErrors.email = "Enter an email address.";
-
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
-      setStatus("error");
-      setMessage("");
-      return;
-    }
-
-    setStatus("submitting");
-    setMessage("");
-
-    try {
-      const response = await fetch("/api/enquiry", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, business, need, phone, email, website, company_fax: trap }),
-      });
-      const payload = (await response.json()) as { error?: string };
-
-      if (!response.ok) {
-        setStatus("error");
-        setMessage(payload.error ?? "Could not send the enquiry. Use WhatsApp instead.");
-        return;
-      }
-
-      setStatus("success");
-    } catch {
-      setStatus("error");
-      setMessage("Could not send the enquiry. Use WhatsApp instead.");
-    }
-  }
-
-  const field =
-    "font-ui mt-2 h-11 w-full rounded-lg border border-line bg-raised px-3.5 text-sm text-text outline-none transition-colors focus:border-text";
-
-  return (
-    <form onSubmit={onSubmit} className="relative grid gap-5" noValidate>
-      <p className="font-ui text-sm text-ash">Or send an enquiry</p>
-      <div>
-        <label htmlFor="name" className="font-ui text-sm text-muted">
-          Name
-        </label>
-        <input id="name" name="name" autoComplete="name" className={field} aria-invalid={Boolean(errors.name)} />
-        {errors.name ? (
-          <p className="mt-2 text-xs text-error" role="alert">
-            {errors.name}
-          </p>
-        ) : null}
-      </div>
-
-      <div>
-        <label htmlFor="business" className="font-ui text-sm text-muted">
-          Business
-        </label>
-        <input
-          id="business"
-          name="business"
-          autoComplete="organization"
-          className={field}
-          aria-invalid={Boolean(errors.business)}
-        />
-        {errors.business ? (
-          <p className="mt-2 text-xs text-error" role="alert">
-            {errors.business}
-          </p>
-        ) : null}
-      </div>
-
-      <div>
-        <label htmlFor="need" className="font-ui text-sm text-muted">
-          What do you need help with?
-        </label>
-        <textarea id="need" name="need" rows={4} className={cn(field, "h-auto py-3 resize-y")} aria-invalid={Boolean(errors.need)} />
-        {errors.need ? (
-          <p className="mt-2 text-xs text-error" role="alert">
-            {errors.need}
-          </p>
-        ) : null}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="phone" className="font-ui text-sm text-muted">
-            Phone / WhatsApp number
-          </label>
-          <input
-            id="phone"
-            name="phone"
-            type="tel"
-            autoComplete="tel"
-            className={field}
-            aria-invalid={Boolean(errors.phone)}
-          />
-          {errors.phone ? (
-            <p className="mt-2 text-xs text-error" role="alert">
-              {errors.phone}
-            </p>
-          ) : null}
-        </div>
-        <div>
-          <label htmlFor="email" className="font-ui text-sm text-muted">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            className={field}
-            aria-invalid={Boolean(errors.email)}
-          />
-          {errors.email ? (
-            <p className="mt-2 text-xs text-error" role="alert">
-              {errors.email}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="website" className="font-ui text-sm text-muted">
-          Company website <span className="normal-case tracking-normal text-muted">(if you have one)</span>
-        </label>
-        <input
-          id="website"
-          name="website"
-          type="text"
-          inputMode="url"
-          autoComplete="url"
-          placeholder="Optional"
-          className={field}
-        />
-      </div>
-
-      <div className="absolute -left-[9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
-        <label htmlFor="company_fax">Company fax</label>
-        <input id="company_fax" name="company_fax" tabIndex={-1} autoComplete="off" />
-      </div>
-
-      {message ? (
-        <p className="text-sm text-error" role="alert">
-          {message}
-        </p>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={status === "submitting"}
-        className="font-ui inline-flex h-11 items-center justify-center rounded-lg border border-line bg-elevated px-4 text-sm font-medium text-text transition-colors hover:border-text disabled:opacity-60 sm:h-9"
-      >
-        {status === "submitting" ? "Sending" : home.cta.button}
-      </button>
-    </form>
-  );
+ const [selected,setSelected]=useState<PackageId|'custom'|'unsure'>('unsure');
+ const [brief,setBrief]=useState(''); const [notice,setNotice]=useState('');
+ const formRef=useRef<HTMLFormElement>(null); const reviewRef=useRef<HTMLHeadingElement>(null); const briefRef=useRef<HTMLPreElement>(null);
+ useEffect(()=>{ const p=new URLSearchParams(window.location.search).get('package'); if(p&&isPackageId(p))setSelected(p);
+ const handler=(event:Event)=>{const id=(event as CustomEvent<string>).detail;if(isPackageId(id)){setSelected(id);setBrief('');setNotice('');}};
+ const customHandler=(event:Event)=>{const labels=(event as CustomEvent<string[]>).detail;setSelected('custom');setBrief('');setNotice('');const input=formRef.current?.elements.namedItem('need') as HTMLTextAreaElement|null;if(input)input.value='I would like a consultation about: '+labels.join(', ')+'.';};
+ window.addEventListener('zentra:package',handler);window.addEventListener('zentra:custom',customHandler);return()=>{window.removeEventListener('zentra:package',handler);window.removeEventListener('zentra:custom',customHandler);}; },[]);
+ useEffect(()=>{if(brief)reviewRef.current?.focus();},[brief]);
+ function prepare(e:React.FormEvent<HTMLFormElement>){e.preventDefault();const form=e.currentTarget;
+  for(const n of ['name','business','need']){const input=form.elements.namedItem(n) as HTMLInputElement|HTMLTextAreaElement;input.value=input.value.trim();}
+  if(!form.reportValidity())return;const d=new FormData(form);const p=packages.find(p=>p.id===selected);
+  setBrief(['ZENTRA · BUSINESS ENQUIRY','','Package: '+(p?.name??(selected==='custom'?'Custom consultation':'Help me decide')),'Project price: '+(p?p.priceCaption+' '+p.currency+p.price+' (for the agreed package work)':'To be discussed'),'','Name: '+d.get('name'),'Business: '+d.get('business'),'Email: '+d.get('email'),'','What I need help with:',String(d.get('need')),'','My budget: '+d.get('budget'),'When I want to start: '+d.get('timeline'),'','Please tell me what you can build, how long it will take, and the full price.','Paid tools, website costs, message fees, and any taxes are extra.'].join('\n'));setNotice('');
+ }
+ async function copy(){try{await navigator.clipboard.writeText(brief);setNotice('Message copied. You can paste it into WhatsApp or your email.');}catch{const r=document.createRange();r.selectNodeContents(briefRef.current!);const s=window.getSelection();s?.removeAllRanges();s?.addRange(r);setNotice('We could not copy it automatically. Your message is selected: copy it yourself or download it.');}}
+ function download(){const u=URL.createObjectURL(new Blob([brief],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='Zentra_Project_Enquiry.txt';a.click();setTimeout(()=>URL.revokeObjectURL(u),2000);setNotice('Your message is being downloaded. Nothing has been sent.');}
+ return <div>
+  <form ref={formRef} onSubmit={prepare} hidden={Boolean(brief)} className="grid gap-5">
+   <div><label className={label} htmlFor="package">Choose a package</label><select id="package" name="package" className={field} value={selected} onChange={e=>setSelected(e.target.value as PackageId|'custom'|'unsure')}><option value="unsure">Help me decide</option><option value="custom">Custom consultation — price after discussion</option>{packages.map(p=><option value={p.id} key={p.id}>{p.name} — {p.priceCaption?.toLowerCase()} {p.currency}{p.price}</option>)}</select></div>
+   <div className="grid gap-5 sm:grid-cols-2"><div><label className={label} htmlFor="name">Your name <span className="text-ash">(required)</span></label><input id="name" name="name" className={field} required autoComplete="name" maxLength={100} placeholder="Your name"/></div><div><label className={label} htmlFor="business">Business name <span className="text-ash">(required)</span></label><input id="business" name="business" className={field} required autoComplete="organization" maxLength={120} placeholder="Your business"/></div></div>
+   <div><label className={label} htmlFor="email">Email <span className="text-ash">(required)</span></label><input id="email" name="email" type="email" className={field} required autoComplete="email" maxLength={160} placeholder="you@business.com"/></div>
+   <div><label className={label} htmlFor="need">What do you need help with? <span className="text-ash">(required)</span></label><textarea id="need" name="need" className={field} required rows={4} maxLength={1500} placeholder="For example: I need an AI assistant to answer customers and follow up on enquiries."/></div>
+   <div className="grid gap-5 sm:grid-cols-2"><div><label className={label} htmlFor="budget">Your budget</label><select id="budget" name="budget" className={field}><option>Not sure yet</option><option>Under ₦200,000</option><option>₦200,000–₦449,999</option><option>₦450,000–₦799,999</option><option>₦800,000–₦1,499,999</option><option>₦1,500,000+</option></select></div><div><label className={label} htmlFor="timeline">When do you want to start?</label><select id="timeline" name="timeline" className={field}><option>Not sure yet</option><option>Within 2 weeks</option><option>Within a month</option><option>In 1–3 months</option></select></div></div>
+   <p className="text-[10px] leading-relaxed text-ash">This form prepares a message for you to check. It does not send your details to us.</p>
+   <button className="font-ui flex min-h-12 items-center justify-between rounded-lg bg-text px-5 text-sm font-medium text-black hover:bg-[#dce7f7]" type="submit">Check my message <span aria-hidden="true">↗</span></button>
+  </form>
+  {brief&&<div><h3 ref={reviewRef} tabIndex={-1} className="font-ui text-xl">Your message is ready.</h3><p className="mt-3 text-xs leading-relaxed text-muted">Check your details before sharing your message.</p><pre ref={briefRef} className="my-6 whitespace-pre-wrap break-words rounded-lg border border-line bg-elevated p-5 font-sans text-xs leading-relaxed">{brief}</pre><a href={whatsappHref(brief)} target="_blank" rel="noopener noreferrer" className="font-ui flex min-h-12 items-center justify-between rounded-lg bg-text px-5 text-sm font-medium text-black">Continue on WhatsApp <span aria-hidden="true">↗</span></a><a href={`mailto:${site.email}?subject=${encodeURIComponent("Business enquiry for Zentra")}&body=${encodeURIComponent(brief)}`} className="mt-3 flex min-h-12 items-center justify-between rounded-lg border border-line px-5 text-xs">Continue by email <span aria-hidden="true">↗</span></a><div className="mt-3 grid grid-cols-2 gap-3"><button className="min-h-12 rounded-lg border border-line bg-elevated text-xs hover:border-text" onClick={copy}>Copy message</button><button className="min-h-12 rounded-lg border border-line bg-elevated text-xs hover:border-text" onClick={download}>Download message</button></div><p className="mt-4 text-[10px] leading-relaxed text-ash">WhatsApp opens your message to Zentra on 09131918185. Email opens a draft to contact@zentratechagency.com. Check your message and send it when you are ready.</p><button className="mt-5 min-h-11 text-xs text-muted underline underline-offset-4" onClick={()=>{setBrief('');setNotice('');setTimeout(()=>formRef.current?.querySelector('select')?.focus(),0);}}>← Edit my details</button></div>}
+  <p role="status" aria-live="polite" className="mt-3 text-xs text-[#bccde1]">{notice}</p>
+ </div>;
 }

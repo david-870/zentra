@@ -1,98 +1,14 @@
-export type PackageId = "starter" | "growth" | "scale";
-
-export type Package = {
-  id: PackageId;
-  name: string;
-  audience: string;
-  description: string;
-  price: string;
-  currency: string;
-  pricePrefix?: string;
-  priceCaption?: string;
-  billing: string;
-  badge?: string;
-  featured?: boolean;
-  features: string[];
-  cta: string;
-};
-
-/**
- * Edit packages, prices, and features here only.
- */
+export type PackageId = "starter" | "growth" | "scale" | "enterprise";
+export type Package = { id: PackageId; name: string; audience: string; description: string; price: string; currency: string; pricePrefix?: string; priceCaption?: string; billing: string; badge?: string; featured?: boolean; features: string[]; cta: string; };
+// Keep the existing internal IDs so saved package links continue to work.
 export const packages: Package[] = [
-  {
-    id: "starter",
-    name: "Starter",
-    audience: "For businesses establishing their online presence.",
-    description: "Get found, look credible, and give customers a clear way to reach you.",
-    price: "250,000",
-    currency: "₦",
-    priceCaption: "Starting from",
-    billing: "One-time project",
-    features: [
-      "A professional website that works on a phone",
-      "A simple way for customers to contact you",
-      "WhatsApp on your site so enquiries come to your phone",
-      "A setup that can answer common questions when you are busy",
-      "A form so enquiries are not lost in chat",
-      "We put the site live for you",
-    ],
-    cta: "Get Started",
-  },
-  {
-    id: "growth",
-    name: "Standard",
-    audience: "For businesses getting enquiries but struggling to manage leads and repetitive tasks.",
-    description: "Keep up with messages, follow people up, and stop doing the same work by hand.",
-    price: "650,000",
-    currency: "₦",
-    priceCaption: "Starting from",
-    billing: "One-time project",
-    badge: "Most chosen",
-    featured: true,
-    features: [
-      "A full website built around how customers actually find you",
-      "WhatsApp or Instagram replies so messages do not pile up",
-      "A system to capture enquiries and keep track of leads",
-      "A simple customer list so you know who contacted you and when",
-      "Automate repetitive tasks such as customer enquiries, follow-ups, bookings and lead management",
-      "See how people find you and what they do on your site",
-      "We launch it and show your team how to use it",
-    ],
-    cta: "Choose Standard",
-  },
-  {
-    id: "scale",
-    name: "Premium",
-    audience: "For established businesses that need integrated or custom systems.",
-    description: "Connect the way you already work, instead of stacking more disconnected tools.",
-    price: "1,500,000",
-    currency: "₦",
-    pricePrefix: "From",
-    billing: "Scoped after a conversation",
-    features: [
-      "A custom website or web application built around your workflow",
-      "WhatsApp and Instagram handled as part of one system",
-      "A customer system your team can actually run day to day",
-      "Automate work that currently sits across people, chats and spreadsheets",
-      "Connect the tools you already use",
-      "Dashboards so you can see what is happening without chasing updates",
-      "Custom software where a package is not enough",
-      "Launch, handover and training for your team",
-    ],
-    cta: "Start a Conversation",
-  },
+ { id: "starter", name: "Starter", audience: "For new and starting businesses.", description: "Help customers find your business, contact you, and leave their details.", price: "200,000", currency: "₦", priceCaption: "Starting from", billing: "One-time project", cta: "Choose Starter", features: ["Website that works well on phones · up to 5 pages", "Customer enquiries saved to email or a spreadsheet", "A button for customers to contact you on WhatsApp", "1 simple task handled automatically, such as an email reply", "Basic Google search setup and website visitor tracking", "We show you how to use it + 14 days of error fixes"] },
+ { id: "growth", name: "Standard", audience: "For growing businesses.", description: "Keep customer enquiries organised and make daily work easier as your business grows.", price: "450,000", currency: "₦", priceCaption: "Starting from", billing: "One-time project", cta: "Choose Standard", features: ["Website built to bring in enquiries · up to 8 pages", "Customer list to track enquiries and 1 sales process", "Up to 2 connected tasks handled automatically", "AI assistant for common questions + a way to reach your team", "Automatic replies on WhatsApp or Instagram · 1 account*", "Track enquiries + a Google search and marketing plan", "We train your team + 30 days of error fixes"] },
+ { id: "scale", name: "Premium", audience: "For businesses with leads, ready to grow sales.", description: "Reply to customers, follow up on enquiries, and automate repeated tasks so your team can focus on sales.", price: "800,000", currency: "₦", priceCaption: "Up to", billing: "Package work capped at this amount", badge: "For sales-focused businesses", featured: true, cta: "Choose Premium", features: ["Customer and sales tracking · 1 sales process", "AI answers to common questions + handover to your team", "Automatic customer replies and lead follow-ups*", "Connect WhatsApp and Instagram · up to 2 accounts*", "Up to 3 tasks handled automatically", "A screen showing enquiries, follow-ups, and sales", "We train your team + 60 days of error fixes"] },
+ { id: "enterprise", name: "Enterprise", audience: "For established businesses improving their systems.", description: "Improve or replace the system you already use, connect your tools, and build around how your business works.", price: "1,500,000", currency: "₦", priceCaption: "Starting from", billing: "Price for the first agreed version", cta: "Choose Enterprise", features: ["Review your existing system and agree what needs to change", "Improve an existing system or build a web app · up to 2 main functions", "Separate access for staff and managers", "Up to 3 tasks handled automatically", "Connect up to 2 tools you already use", "A screen showing business reports + a guide for your team", "We train your team + 60 days of error fixes"] }
 ];
+export function isPackageId(value: string): value is PackageId { return packages.some(p => p.id === value); }
+export function packageHref(id: PackageId) { return `/?package=${id}#contact`; }
+export function formatPackagePrice(item: Package) { return `${item.pricePrefix ? item.pricePrefix + " " : ""}${item.currency}${item.price}`; }
 
-export function isPackageId(value: string): value is PackageId {
-  return packages.some((item) => item.id === value);
-}
-
-export function packageHref(id: PackageId) {
-  return `/?package=${id}#contact`;
-}
-
-export function formatPackagePrice(item: Package) {
-  const prefix = item.pricePrefix ? `${item.pricePrefix} ` : "";
-  return `${prefix}${item.currency}${item.price}`;
-}
+export const confirmedPackagePrices = packages.map(item => `${item.name} ${item.priceCaption?.toLowerCase()} ${item.currency}${item.price}`).join(", ");

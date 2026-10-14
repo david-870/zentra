@@ -1,3 +1,4 @@
+import { packages } from "@/content/packages";
 export type LeadContext = {
   name?: string;
   businessName?: string;
@@ -72,6 +73,7 @@ export function detectNeed(text: string): Partial<LeadContext> | null {
   const value = text.toLowerCase();
 
   if (/\bstarter\b/.test(value)) return { packageInterest: "starter", serviceInterest: "website", source: sourceFrom(value) };
+  if (/\b(premium|scale)\b/.test(value)) return { packageInterest: "scale", serviceInterest: "automation", source: sourceFrom(value) };
   if (
     (/\b(growth|business package|standard package)\b/.test(value) || /^(business|standard)[\s!.]*$/i.test(value)) &&
     !/marketing/.test(value)
@@ -79,10 +81,10 @@ export function detectNeed(text: string): Partial<LeadContext> | null {
     return { packageInterest: "growth", serviceInterest: "automation", source: sourceFrom(value) };
   }
   if (
-    /\b(scale|custom package|complete package|premium package)\b/.test(value) ||
-    /^(custom|complete|premium)[\s!.]*$/i.test(value)
+    /\b(enterprise|custom package|complete package)\b/.test(value) ||
+    /^(custom|complete|enterprise)[\s!.]*$/i.test(value)
   ) {
-    return { packageInterest: "scale", serviceInterest: "software", source: sourceFrom(value) };
+    return { packageInterest: "enterprise", serviceInterest: "software", source: sourceFrom(value) };
   }
 
   if (/\bwebsite\b|\bweb app|\bweb application|\blanding page/.test(value)) {
@@ -129,13 +131,15 @@ export function recommendPackage(ctx: LeadContext) {
   const problem = `${ctx.problem ?? ""} ${ctx.businessDescription ?? ""}`.toLowerCase();
   const budget = ctx.budgetRange ?? "";
 
-  if (ctx.packageInterest === "starter" || ctx.packageInterest === "growth" || ctx.packageInterest === "scale") {
+  if (ctx.packageInterest === "starter" || ctx.packageInterest === "growth" || ctx.packageInterest === "scale" || ctx.packageInterest === "enterprise") {
     return ctx.packageInterest;
   }
-  if (service === "software" || /custom app|dashboard|integrat/.test(problem)) return "scale";
+  if (/lead|follow.?up|sales/.test(problem) && (service === "automation" || service === "crm")) return "scale";
+  if (service === "software" || /custom app|dashboard|integrat|replace.*system|existing.*system/.test(problem)) return "enterprise";
   if (service === "automation" || service === "crm" || /crm|automat|ai assistant/.test(problem)) return "growth";
-  if (budget.includes("1.5")) return "scale";
-  if (budget.includes("650") || budget.includes("300k–₦700") || budget.includes("700k")) return "growth";
+  if (budget.includes("1.5") || budget.includes("1,500") || budget.includes("1500000")) return "enterprise";
+  if (budget.includes("800") || budget.includes("700k")) return "scale";
+  if (budget.includes("450") || budget.includes("650") || budget.includes("300k–₦700")) return "growth";
   if (service === "website" || service === "marketing") return "starter";
   return "growth";
 }
@@ -175,10 +179,7 @@ export function firstName(name?: string) {
 }
 
 export function packageLabel(id?: string) {
-  if (id === "starter") return "Starter";
-  if (id === "scale") return "Premium";
-  if (id === "growth") return "Standard";
-  return id ?? "";
+  return packages.find(item => item.id === id)?.name ?? id ?? "";
 }
 
 export function scoreLabel(score: number) {
@@ -188,11 +189,7 @@ export function scoreLabel(score: number) {
 }
 
 export function recommendationCopy(id: string) {
-  if (id === "starter") {
-    return "From what you've said, *Starter* feels like the right place to begin.\n\nThat's a professional site, a simple way for people to reach you, WhatsApp on the site, and a form so enquiries don't get lost.\n\n*From ₦250,000.*";
-  }
-  if (id === "scale") {
-    return "From what you've said, *Premium* looks like the better fit.\n\nThat's a setup built around how you already work — web app or software, automation, a customer system, and reporting.\n\n*From ₦1,500,000*, confirmed after a quick conversation.";
-  }
-  return "From what you've said, *Standard* looks like the right fit.\n\nThat's a proper website, plus help with enquiries, a simple customer list, and less repetitive work for the team.\n\n*From ₦650,000.*";
+  const item = packages.find(item => item.id === id);
+  if (!item) return "The team can discuss your needs and agree a suitable plan and price.";
+  return `From what you have said, *${item.name}* looks like a suitable starting point.\n\n${item.description}\n\n*${item.priceCaption} ${item.currency}${item.price}* for the agreed package work. Paid tools, message fees, extra features, and any taxes are separate.`;
 }
