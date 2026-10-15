@@ -10,7 +10,7 @@ const rows = [
  ['Website, app, or business system','Up to 5 website pages','Up to 8 website pages','Customer and sales tracking · 1 sales process','Improve a system or build a web app · up to 2 main functions'],
  ['Managing customers','Enquiries saved to email or spreadsheet','Customer list to track 1 sales process','Track enquiries, follow-ups, and sales','Connect up to 2 tools you already use'],
  ['Tasks handled automatically','1 simple task','Up to 2 connected tasks','Up to 3 tasks, including lead follow-ups','Up to 3 tasks'],
- ['WhatsApp and Instagram','Button to contact you on WhatsApp','Automatic replies on 1 account*','Replies and follow-ups on up to 2 accounts*','Based on the tools we agree to connect*'],
+ ['WhatsApp and Instagram','Button to contact you on WhatsApp','Automatic replies on 1 account','Replies and follow-ups on up to 2 accounts','Based on the tools we agree to connect'],
  ['AI assistant for customer questions','Not included','AI answers + a way to reach your team','AI answers + handover to your team','Based on your agreed system plan'],
  ['Business reports','Track website visits + basic Google setup','Track enquiries + a plan to promote your business','Track enquiries, follow-ups, and sales','Screen showing agreed business reports'],
  ['Fixing errors after launch','14 days','30 days','60 days','60 days'],
@@ -40,7 +40,6 @@ export function Packages() {
   <p className="mt-3 mb-7 text-xs text-ash">Custom price after consultation. We agree the features, full cost, and delivery date before work starts.</p>
   <CustomBuilder />
  </div>
- <p className="mx-auto mt-6 max-w-4xl text-center text-[10px] leading-relaxed text-ash">Starter, Standard, and Enterprise show starting prices in naira. Premium package work is capped at ₦800,000 for the agreed features. Extra features can be quoted through a custom consultation. We agree what we will build, the full price, and the delivery date before work starts. Your website address (domain), hosting, paid tools, message fees, adverts, and any taxes cost extra. *Automatic WhatsApp and Instagram replies need platform approval and account access.</p>
  <p className="mt-9 border-t border-hairline pt-6 text-center text-xs leading-loose text-muted">Apps and business software <span className="mx-3 text-ash">·</span> AI assistants and automation <span className="mx-3 text-ash">·</span> Managing customer enquiries <span className="mx-3 text-ash">·</span> Google search visibility (SEO)</p>
  </Container></section>;
 }
