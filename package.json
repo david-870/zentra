@@ -8,12 +8,13 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "test:security": "node tests/security.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/client": "^6.16.3",
-    "next": "^16.3.5",
+    "next": "^16.4.2",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },
@@ -25,5 +26,11 @@
     "prisma": "^6.16.3",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2"
+  },
+  "overrides": {
+    "@prisma/config": {
+      "deepmerge-ts": "^8.0.0",
+      "effect": "^3.20.0"
+    }
   }
 }

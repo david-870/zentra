@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import { notFound } from "next/navigation";
 import { archiveWebsiteEnquiryAction, updateWebsiteEnquiryAction } from "@/app/ops/actions";
 import { ENQUIRY_STATUSES, getWebsiteEnquiry } from "@/lib/ops/enquiry-postgres";
@@ -14,6 +15,7 @@ function digits(value: string) {
 }
 
 export default async function EnquiryPage({ params }: { params: Promise<{ id: string }> }) {
+  await requirePageUser();
   const { id } = await params;
   const enquiry = await getWebsiteEnquiry(id);
   if (!enquiry) notFound();

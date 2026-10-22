@@ -1,3 +1,4 @@
+import { readLimitedBody } from "@/lib/security/request";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { claimEvent, chatStoreReady, releaseEvent } from "@/lib/ops/chat-store";
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
 function validSignature(request: NextRequest, raw: string) {
   const secret = opsConfig.whatsapp.appSecret;
-  if (!secret) return true;
+  if (!secret) return false;
   const header = request.headers.get("x-hub-signature-256");
   if (!header?.startsWith("sha256=")) return false;
   const expected = createHmac("sha256", secret).update(raw).digest("hex");
@@ -46,7 +47,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, throttled: true });
   }
 
-  const raw = await request.text();
+  if (!opsConfig.whatsapp.appSecret) {
+    return NextResponse.json({ error: "Webhook unavailable" }, { status: 503 });
+  }
+  let raw: string;
+  try { raw = await readLimitedBody(request, MAX_BODY); }
+  catch { return NextResponse.json({ error: "Invalid or oversized body" }, { status: 413 }); }
   if (raw.length > MAX_BODY) {
     return NextResponse.json({ error: "Payload too large" }, { status: 413 });
   }

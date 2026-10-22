@@ -15,9 +15,9 @@ const nav = [
 ];
 
 export default async function OpsAppLayout({ children }: { children: React.ReactNode }) {
-  await safeEnsureSeed();
   const user = await requireUser();
   if (!user) redirect("/ops/login");
+  await safeEnsureSeed();
 
   let unread = 0;
   try {

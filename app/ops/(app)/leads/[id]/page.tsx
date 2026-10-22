@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import { notFound } from "next/navigation";
 import { LeadStatus } from "@prisma/client";
 import { db } from "@/lib/ops/db";
@@ -29,6 +30,7 @@ export default async function LeadPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ send?: string }>;
 }) {
+  await requirePageUser();
   const { id } = await params;
   const query = await searchParams;
   const lead = await db.lead.findUnique({

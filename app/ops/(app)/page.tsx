@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import Link from "next/link";
 import { db } from "@/lib/ops/db";
 import { runFollowUpsAction, simulateInbound } from "@/app/ops/actions";
@@ -13,6 +14,7 @@ function formatWhen(value: Date) {
 }
 
 export default async function OpsHome() {
+  await requirePageUser();
   const enquiries = await listWebsiteEnquiries(8);
   const chatLeads = await listChatLeads();
   const whatsapp = whatsappConfigured();

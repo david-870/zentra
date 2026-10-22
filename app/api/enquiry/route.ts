@@ -1,3 +1,4 @@
+import { sameOrigin, readLimitedBody } from "@/lib/security/request";
 import { NextRequest, NextResponse } from "next/server";
 import { createWebsiteEnquiry } from "@/lib/ops/enquiry";
 import { rateLimit } from "@/lib/ops/rate-limit";
@@ -10,19 +11,8 @@ function isPhone(value: string) {
   return value.replace(/\D/g, "").length >= 10;
 }
 
-function includeNotifyEnv() {
-  const found = {
-    OPS_NOTIFY_PHONE: Boolean(String(process.env.OPS_NOTIFY_PHONE ?? "").trim()),
-    OPS_NOTIFY_EMAIL: Boolean(String(process.env.OPS_NOTIFY_EMAIL ?? "").trim()),
-    RESEND_API_KEY: Boolean(String(process.env.RESEND_API_KEY ?? "").trim()),
-    WHATSAPP_ACCESS_TOKEN: Boolean(String(process.env.WHATSAPP_ACCESS_TOKEN ?? "").trim()),
-    WHATSAPP_PHONE_NUMBER_ID: Boolean(String(process.env.WHATSAPP_PHONE_NUMBER_ID ?? "").trim()),
-    WHATSAPP_NOTIFY_TEMPLATE: Boolean(String(process.env.WHATSAPP_NOTIFY_TEMPLATE ?? "").trim()),
-  };
-  console.info("enquiry notify env", found);
-}
-
 export async function POST(request: NextRequest) {
+  if (!sameOrigin(request)) return new NextResponse(null, { status: 403 });
   const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
   if (!rateLimit(`enquiry:${ip}`, 8, 10 * 60_000)) {
     return NextResponse.json({ error: "Too many enquiries. Try WhatsApp instead." }, { status: 429 });
@@ -30,7 +20,7 @@ export async function POST(request: NextRequest) {
 
   let body: unknown;
   try {
-    body = await request.json();
+    body = JSON.parse(await readLimitedBody(request, 16_384));
   } catch {
     return NextResponse.json({ error: "Invalid enquiry." }, { status: 400 });
   }
@@ -51,12 +41,14 @@ export async function POST(request: NextRequest) {
   const email = String(data.email ?? "").trim();
   const website = String(data.website ?? "").trim();
 
+  if ([name, business].some(v => v.length > 160) || need.length > 4000 || phone.length > 32 || email.length > 254 || website.length > 500) {
+    return NextResponse.json({ error: "One or more fields are too long." }, { status: 400 });
+  }
   if (name.length < 2 || business.length < 2 || need.length < 8 || !isPhone(phone) || !isEmail(email)) {
     return NextResponse.json({ error: "Fill in every required field." }, { status: 400 });
   }
 
   try {
-    includeNotifyEnv();
     await createWebsiteEnquiry({ name, business, need, phone, email, website });
     return NextResponse.json({ ok: true });
   } catch (error) {

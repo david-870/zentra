@@ -1,7 +1,9 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import { db } from "@/lib/ops/db";
 import { updateKnowledge } from "@/app/ops/actions";
 
 export default async function KnowledgePage() {
+  await requirePageUser();
   try {
     const items = await db.knowledgeBaseItem.findMany({ orderBy: { title: "asc" } });
     const packs = await db.package.findMany({ orderBy: { sortOrder: "asc" } });

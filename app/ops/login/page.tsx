@@ -11,7 +11,7 @@ export default async function LoginPage({
       <Logo className="text-4xl" />
       <p className="mt-4 text-[0.7rem] tracking-[0.16em] text-muted uppercase">Ops</p>
       <p className="mt-3 text-muted">Internal enquiry inbox.</p>
-      <p className="mt-2 text-sm text-muted">Sign in with david@zentra.local</p>
+      <p className="mt-2 text-sm text-muted">Sign in with your team account.</p>
       <form action="/api/ops/login" method="post" className="mt-10 grid gap-4">
         <label className="text-xs tracking-[0.08em] uppercase">
           Email
@@ -19,17 +19,17 @@ export default async function LoginPage({
             name="email"
             type="email"
             required
-            defaultValue="david@zentra.local"
+            autoComplete="username"
             className="mt-2 w-full border border-line bg-raised px-3 py-3"
           />
         </label>
         <label className="text-xs tracking-[0.08em] uppercase">
           Password
-          <input name="password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
+          <input name="password" autoComplete="current-password" type="password" required className="mt-2 w-full border border-line bg-raised px-3 py-3" />
         </label>
         {query.error === "1" ? <p className="text-sm text-muted">Wrong email or password.</p> : null}
         {query.error === "env" ? (
-          <p className="text-sm text-muted">The server cannot read OPS_PASSWORD yet. Check that variable in Vercel, then redeploy.</p>
+          <p className="text-sm text-muted">Sign-in is not configured securely. Ask the site administrator to check the settings.</p>
         ) : null}
         {query.error === "session" ? (
           <p className="text-sm text-muted">Password was accepted, but the inbox session could not be saved.</p>

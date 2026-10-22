@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import Link from "next/link";
 import { listWebsiteEnquiries, postgresConfigured } from "@/lib/ops/enquiry-postgres";
 import { whatsappConfigured } from "@/lib/ops/whatsapp";
@@ -10,6 +11,7 @@ function formatWhen(value: Date) {
 }
 
 export default async function EnquiriesPage() {
+  await requirePageUser();
   const enquiries = await listWebsiteEnquiries();
   const whatsapp = whatsappConfigured();
   const stored = postgresConfigured();

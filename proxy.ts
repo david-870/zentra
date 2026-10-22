@@ -12,12 +12,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (isLogin && session) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/ops";
-    return NextResponse.redirect(url);
-  }
-
   return NextResponse.next();
 }
 

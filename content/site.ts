@@ -3,7 +3,7 @@ export const site = {
   tagline: "Build. Automate. Grow.",
   email: "contact@zentratechagency.com",
   description:
-    "We build AI systems, apps, websites, and automation that help your business get more customer enquiries, follow up faster, and make everyday work easier.",
+    "Zentra builds websites, apps, AI assistants and business automation for Nigerian businesses. Get more enquiries, follow up faster and simplify daily work.",
   whatsapp: {
     display: "09131918185",
     e164: "2349131918185",

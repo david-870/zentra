@@ -1,8 +1,8 @@
-import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/lib/ops/db";
+
 import { opsConfig } from "@/lib/ops/config";
-import { runtimeEnv } from "@/lib/ops/runtime-env";
+
 import { deleteOpsSession, opsSessionValid } from "@/lib/ops/session-store";
 
 const COOKIE = "zentra_ops";
@@ -13,25 +13,6 @@ export type OpsUser = {
   email: string;
   name: string;
 };
-
-function secret() {
-  const value = runtimeEnv("SESSION_SECRET");
-  if (value.length >= 16) return value;
-  const fallback = opsConfig.ops.password;
-  if (fallback.length >= 8) {
-    return createHmac("sha256", "zentra-ops-session").update(fallback).digest("hex");
-  }
-  throw new Error("SESSION_SECRET is missing or too short.");
-}
-
-export function envOpsUser(): OpsUser | null {
-  if (!opsConfig.ops.password) return null;
-  return {
-    id: ENV_OPS_USER_ID,
-    email: opsConfig.ops.email.toLowerCase(),
-    name: "David",
-  };
-}
 
 export function sameText(left: string, right: string) {
   const a = Buffer.from(left);
@@ -55,23 +36,6 @@ export function verifyPassword(password: string, stored: string) {
   return timingSafeEqual(next, current);
 }
 
-function sign(payload: string) {
-  return createHmac("sha256", secret()).update(payload).digest("hex");
-}
-
-export async function createSession(userId: string) {
-  const payload = `${userId}.${Date.now()}`;
-  const token = `${payload}.${sign(payload)}`;
-  const jar = await cookies();
-  jar.set(COOKIE, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 14,
-  });
-}
-
 export async function destroySession() {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
@@ -79,7 +43,7 @@ export async function destroySession() {
     try {
       await deleteOpsSession(token);
     } catch (error) {
-      console.error(error);
+      console.error("Ops session operation failed");
     }
   }
   jar.delete(COOKIE);
@@ -88,7 +52,7 @@ export async function destroySession() {
 export async function getSessionUser(): Promise<OpsUser | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE)?.value;
-  if (!token) return null;
+  if (!token || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token)) return null;
 
   try {
     if (await opsSessionValid(token)) {
@@ -99,20 +63,9 @@ export async function getSessionUser(): Promise<OpsUser | null> {
       };
     }
   } catch (error) {
-    console.error(error);
+    console.error("Ops session operation failed");
   }
 
-  const parts = token.split(".");
-  if (parts.length !== 3) return null;
-  const [userId, issued, signature] = parts;
-  if (sign(`${userId}.${issued}`) !== signature) return null;
-  if (userId === ENV_OPS_USER_ID) return envOpsUser();
-  try {
-    const user = await db.user.findUnique({ where: { id: userId } });
-    if (user) return { id: user.id, email: user.email, name: user.name };
-  } catch (error) {
-    console.error(error);
-  }
   return null;
 }
 

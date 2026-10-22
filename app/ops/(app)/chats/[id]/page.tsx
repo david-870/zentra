@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import { notFound } from "next/navigation";
 import { sendChatHumanMessage, setChatControlAction } from "@/app/ops/actions";
 import { getChatLead } from "@/lib/ops/chat-store";
@@ -16,6 +17,7 @@ export default async function ChatLeadPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ send?: string }>;
 }) {
+  await requirePageUser();
   const { id } = await params;
   const query = await searchParams;
   const lead = await getChatLead(id);

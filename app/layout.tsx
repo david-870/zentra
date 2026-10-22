@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Instrument_Serif, Inter } from "next/font/google";
 import { site } from "@/content/site";
-import { GA_ID, googleTagSnippet } from "@/lib/analytics";
+
 import "./globals.css";
 
 const body = Geist({
@@ -33,12 +33,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} — ${site.tagline}`,
+    default: `${site.name} | Websites, Apps & AI Automation in Nigeria`,
     template: `%s — ${site.name}`,
   },
   description: site.description,
   openGraph: {
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} | Websites, Apps & AI Automation in Nigeria`,
     description: site.description,
     type: "website",
     url: "/",
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} | Websites, Apps & AI Automation in Nigeria`,
     description: site.description,
   },
   robots: { index: true, follow: true },
@@ -59,10 +59,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${body.variable} ${ui.variable} ${display.variable}`}>
-      <head>
-        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} />
-        <script dangerouslySetInnerHTML={{ __html: googleTagSnippet }} />
-      </head>
       <body className="min-h-dvh bg-bg font-sans text-text antialiased">{children}</body>
     </html>
   );

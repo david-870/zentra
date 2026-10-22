@@ -1,6 +1,8 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import { db } from "@/lib/ops/db";
 
 export default async function AnalyticsPage() {
+  await requirePageUser();
   let leads: Awaited<ReturnType<typeof db.lead.findMany>> = [];
   try {
     leads = await db.lead.findMany();

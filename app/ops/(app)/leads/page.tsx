@@ -1,3 +1,4 @@
+import { requirePageUser } from "@/lib/security/page-auth";
 import Link from "next/link";
 import { listChatLeads } from "@/lib/ops/chat-store";
 import { scoreLabel } from "@/lib/ops/qualify";
@@ -13,6 +14,7 @@ const columns = [
 ];
 
 export default async function PipelinePage() {
+  await requirePageUser();
   const leads = await listChatLeads();
 
   return (

@@ -4,7 +4,7 @@ import { LeadStatus, ConversationControl } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { createSession, destroySession, envOpsUser, requireUser, sameText, verifyPassword } from "@/lib/ops/auth";
+import { destroySession, requireUser } from "@/lib/ops/auth";
 import { opsConfig } from "@/lib/ops/config";
 import { db } from "@/lib/ops/db";
 import { ENQUIRY_STATUSES, setWebsiteEnquiryArchived, updateWebsiteEnquiry } from "@/lib/ops/enquiry-postgres";
@@ -26,47 +26,6 @@ function refreshOps(leadId?: string, enquiryId?: string) {
     revalidatePath(`/ops/chats/${leadId}`);
   }
   if (enquiryId) revalidatePath(`/ops/enquiries/${enquiryId}`);
-}
-
-export async function loginAction(formData: FormData) {
-  await connection();
-  await safeEnsureSeed();
-  const email = String(formData.get("email") ?? "").toLowerCase().trim();
-  const password = String(formData.get("password") ?? "").trim();
-
-  let user = null;
-  try {
-    user = await db.user.findUnique({ where: { email } });
-  } catch (error) {
-    console.error(error);
-  }
-
-  try {
-    if (user && verifyPassword(password, user.passwordHash)) {
-      await createSession(user.id);
-      redirect("/ops");
-    }
-
-    const envUser = envOpsUser();
-    const expectedEmail = opsConfig.ops.email;
-    const expectedPassword = opsConfig.ops.password;
-    if (
-      envUser &&
-      expectedPassword &&
-      email === expectedEmail &&
-      sameText(password, expectedPassword)
-    ) {
-      await createSession(envUser.id);
-      redirect("/ops");
-    }
-  } catch (error) {
-    if (typeof error === "object" && error && "digest" in error) {
-      throw error;
-    }
-    console.error("ops login failed", error);
-  }
-
-  redirect("/ops/login?error=1");
 }
 
 export async function logoutAction() {
